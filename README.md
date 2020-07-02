@@ -1,4 +1,4 @@
-# cfn-resource-actions README
+# cfn-resource-actions
 
 _This is work in progress and not yet released to the marketplace _
 
@@ -44,4 +44,3 @@ A configured AWS CLI with the following permissions:
 
 Does not yet support AWS SSO authentication
 
-# cfn-resource-actions
