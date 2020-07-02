@@ -18,7 +18,6 @@ The current version supports the following actions:
 
 ![Demo](images/demo.gif)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
 ## Requirements
 
