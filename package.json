@@ -2,7 +2,7 @@
 	"name": "cfn-resource-actions",
 	"displayName": "CloudFormation Resource Actions",
 	"description": "Integrate with deployed resources directly from your CloudFormation template",
-	"version": "0.0.1",
+	"version": "0.0.4",
 	"publisher": "ljacobsson",
 	"engines": {
 		"vscode": "^1.46.0"
@@ -10,6 +10,8 @@
 	"categories": [
 		"Other"
 	],
+	"icon": "images/icon.png",
+	"keywords": ["CloudFormation"],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/mhlabs/cfn-resource-actions.git"

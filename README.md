@@ -1,10 +1,14 @@
 # cfn-resource-actions
 
+## Installation from [Marketplace](https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions)
+`ext install ljacobsson.cfn-resource-actions`
+
+
 ## Features
 
 VS Code extension that lets you perform actions against deployed AWS resources directly from the CloudFormation/SAM template.
 
-The current version supports the following actions:
+The current version supports the following actions. More to follow in later versions:
 
 * AWS::Serverless::Function / AWS::Lambda::Function:
   * Open Lambda console for a given function in the browser
@@ -49,5 +53,5 @@ In the global settings.json file, add the following parameters:
 
 ## Known Issues
 
-Does not reload base don updates to your template. To map with the latest version of the stack, disable and re-enable the extension
+Does not reload based on updates to your template. To map with the latest version of the stack, disable and re-enable the extension
 
