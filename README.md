@@ -14,7 +14,7 @@ The current version supports the following actions:
   * Query table from VS code and get the result in the output tab
 
 
-![Demo](images/demo.gif)
+![Demo](images/example.gif)
 
 ## Requirements
 
