@@ -1,9 +1,5 @@
 # cfn-resource-actions
 
-## Installation from [Marketplace](https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions)
-`ext install ljacobsson.cfn-resource-actions`
-
-
 ## Features
 
 VS Code extension that lets you perform actions against deployed AWS resources directly from the CloudFormation/SAM template.
@@ -21,7 +17,16 @@ The current version supports the following actions. More to follow in later vers
   * Poll queue
 
 
+Lambda logs and DynamoDB Query:
 ![Demo](images/example.gif)
+
+SQS send and poll:
+![Demo](images/example-sqs.gif)
+
+
+
+## Installation
+`ext install ljacobsson.cfn-resource-actions`
 
 ## Requirements
 
