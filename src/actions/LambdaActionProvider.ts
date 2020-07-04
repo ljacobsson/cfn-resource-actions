@@ -2,8 +2,7 @@ import { IActionProvider } from "./IActionProvider";
 import AWS = require("aws-sdk");
 
 export class LambdaActionProvider implements IActionProvider {
-    registerCommands(): void {
-        throw new Error("Method not implemented.");
+    async registerCommands() {
     }
 
     public getActions() {

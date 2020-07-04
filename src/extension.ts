@@ -1,18 +1,21 @@
 import { ExtensionContext, languages, commands, Disposable, workspace, window } from 'vscode';
 import { CodelensProvider } from './CodelensProvider';
-import { CloudFormation, SharedIniFileCredentials } from "aws-sdk";
+import { CloudFormation, STS } from "aws-sdk";
+import { Globals } from "./util/Globals";
 import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
 import { DynamoDBActionProvider } from './actions/DynamoDBActionProvider';
+import { SQSActionProvider } from './actions/SQSActionProvider';
 import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
+import { SNSActionProvider } from './actions/SNSActionProvider';
 const opn = require('opn');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 
 let disposables: Disposable[] = [];
 
 async function getStackResources(stackName: string) {
-    try {
-        const cloudFormation = new CloudFormation(new SharedIniFileCredentials());
+    try {        
+        const cloudFormation = new CloudFormation();
         const stackResourcesResponse = await cloudFormation
             .listStackResources({ StackName: stackName })
             .promise();
@@ -33,26 +36,28 @@ async function getStackResources(stackName: string) {
 }
 
 export async function activate(context: ExtensionContext) {
-    
+    const sts = new STS();
+    Globals.AccountId = (await sts.getCallerIdentity().promise()).Account as string;
+    Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
     const config = vscode.workspace.getConfiguration('cfn-resource-actions');
-    
+
     if (await config.get("sso.useSSO")) {
         await ssoAuth.configure({
             clientName: "evb-cli",
             startUrl: await config.get("sso.startUrl"),
             accountId: await config.get("sso.accountId"),
             region: await config.get("sso.region")
-          });
-          AWS.config.update({
+        });
+        AWS.config.update({
             credentials: await ssoAuth.authenticate(await config.get("sso.role"))
-          });
+        });
     }
 
     let stackName = null;
     if (await config.has("stackName")) {
         stackName = await config.get("stackName");
-    } 
-    
+    }
+
     if (!stackName) {
         stackName = await window.showInputBox({ prompt: "Enter stack name", placeHolder: "Please enter the name of the deployed stack" });
         await config.update("stackName", stackName);
@@ -82,6 +87,8 @@ export async function activate(context: ExtensionContext) {
             opn(url);
         });
         new DynamoDBActionProvider().registerCommands();
+        new SNSActionProvider().registerCommands();
+        new SQSActionProvider().registerCommands();
     }
 }
 

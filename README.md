@@ -11,11 +11,14 @@ VS Code extension that lets you perform actions against deployed AWS resources d
 The current version supports the following actions. More to follow in later versions:
 
 * AWS::Serverless::Function / AWS::Lambda::Function:
-  * Open Lambda console for a given function in the browser
   * Tail logs in terminal output
 * AWS::DynamoDB::Table / AWS::Serverless::SimpleTable:
-  * Open DynamoDB console for a given table in the browser
   * Query table from VS code and get the result in the output tab
+* AWS::SNS::Topic
+  * Publish message to topic
+* AWS::SQS::Queue
+  * Send message to queue
+  * Poll queue
 
 
 ![Demo](images/example.gif)

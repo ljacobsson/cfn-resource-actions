@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
 import { LambdaActionProvider } from './actions/LambdaActionProvider';
 import { DynamoDBActionProvider } from './actions/DynamoDBActionProvider';
+import { SNSActionProvider } from './actions/SNSActionProvider';
+import { SQSActionProvider } from './actions/SQSActionProvider';
 
 export class CodelensProvider implements vscode.CodeLensProvider {
 
@@ -10,7 +12,9 @@ export class CodelensProvider implements vscode.CodeLensProvider {
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
     private actionArgs: { [index: string]: any } = {
         ...new LambdaActionProvider().getActions(),
-        ...new DynamoDBActionProvider().getActions()
+        ...new DynamoDBActionProvider().getActions(),
+        ...new SNSActionProvider().getActions(),
+        ...new SQSActionProvider().getActions(),
     };
     stackResources: StackResourceSummaries;
 
@@ -45,6 +49,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
                             position,
                             new RegExp(regex)
                         );
+
                         if (range && this.actionArgs[res.ResourceType]) {
                             for (const item of this.actionArgs[res.ResourceType](res.PhysicalResourceId)) {
                                 this.codeLenses.push(new vscode.CodeLens(range, item));

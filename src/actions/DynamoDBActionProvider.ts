@@ -1,5 +1,6 @@
 import { IActionProvider } from "./IActionProvider";
 import { commands, window } from 'vscode';
+import { Globals } from "../util/Globals";
 
 import AWS = require("aws-sdk");
 
@@ -33,10 +34,11 @@ export class DynamoDBActionProvider implements IActionProvider {
                 const query = await documentClient.query(params).promise();
                 if (query.Items) {
                     
-                    const outputChannel = window.createOutputChannel(`Query on ${tableName}`);
+                    Globals.OutputChannel.appendLine(`Running query on ${tableName}`);
                     for (const row of query.Items) {
-                        outputChannel.appendLine(JSON.stringify(row, null, 2));
+                        Globals.OutputChannel.appendLine(JSON.stringify(row, null, 2));
                     }
+                    Globals.OutputChannel.show();
                 }
             }
         });
