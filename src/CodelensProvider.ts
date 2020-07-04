@@ -1,14 +1,11 @@
 import * as vscode from 'vscode';
-import { TemplateParser } from './TemplateParser';
 import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
-import AWS = require('aws-sdk');
 import { LambdaActionProvider } from './actions/LambdaActionProvider';
 import { DynamoDBActionProvider } from './actions/DynamoDBActionProvider';
 
 export class CodelensProvider implements vscode.CodeLensProvider {
 
     private codeLenses: vscode.CodeLens[] = [];
-    private parser: TemplateParser;
     private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
     private actionArgs: { [index: string]: any } = {
@@ -21,7 +18,6 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
         });
-        this.parser = new TemplateParser();
         this.stackResources = stackResources;
     }
 
@@ -34,22 +30,23 @@ export class CodelensProvider implements vscode.CodeLensProvider {
             try {
                 this.codeLenses = [];
                 const text = document.getText();
-                const resources = this.parser.parse(text) as any[];
                 let matches;
                 //
-                for (const res of resources) {
-                    const regex = new RegExp(`([^a-zA-Z0-9]${res.name}[^a-zA-Z0-9])`, "g");
+                for (const res of this.stackResources) {
+                    const regex = new RegExp(`([^a-zA-Z0-9]${res.LogicalResourceId}[^a-zA-Z0-9])`, "g");
                     while ((matches = regex.exec(text)) !== null) {
                         const line = document.lineAt(document.positionAt(matches.index).line);
                         const indexOf = line.text.indexOf(matches[0]);
+                        if (indexOf < 0) {
+                            continue;
+                        };
                         const position = new vscode.Position(line.lineNumber, indexOf);
                         const range = document.getWordRangeAtPosition(
                             position,
                             new RegExp(regex)
                         );
-                        if (range && this.actionArgs[res.type]) {
-                            const resource = this.stackResources.filter(p => p.LogicalResourceId === res.name)[0];
-                            for (const item of this.actionArgs[res.type](resource.PhysicalResourceId)) {
+                        if (range && this.actionArgs[res.ResourceType]) {
+                            for (const item of this.actionArgs[res.ResourceType](res.PhysicalResourceId)) {
                                 this.codeLenses.push(new vscode.CodeLens(range, item));
                             }
                         }

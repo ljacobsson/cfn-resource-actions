@@ -1,7 +1,7 @@
 {
 	"name": "cfn-resource-actions",
-	"displayName": "CloudFormation Resource Finder",
-	"description": "",
+	"displayName": "CloudFormation Resource Actions",
+	"description": "Integrate with deployed resources directly from your CloudFormation template",
 	"version": "0.0.1",
 	"publisher": "ljacobsson",
 	"engines": {
@@ -10,6 +10,10 @@
 	"categories": [
 		"Other"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mhlabs/cfn-resource-actions.git"
+	},
 	"activationEvents": [
 		"onCommand:cfn-resource-actions.enableCodeLens"
 	],
@@ -20,7 +24,47 @@
 				"command": "cfn-resource-actions.enableCodeLens",
 				"title": "CloudFormation Resource Finder"
 			}
-		]
+		],
+		"configuration": {
+			"title": "CloudFormation Resource Actions",
+			"properties": {
+				"cfn-resource-actions.stackName": {
+					"type": "string",
+					"default": null,
+					"description": "The name of the deployed stack that you want to map your template with. (Should be set in workspace settings)"
+				},
+				"cfn-resource-actions.enableCodeLens": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable or disable this feature"
+				},
+				"cfn-resource-actions.sso.useSSO": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable or disable AWS SSO authentication"
+				},
+				"cfn-resource-actions.sso.startUrl": {
+					"type": "string",
+					"default": null,
+					"description": "The AWS SSO start URL"
+				},
+				"cfn-resource-actions.sso.accountId": {
+					"type": "string",
+					"default": null,
+					"description": "Your account ID"
+				},
+				"cfn-resource-actions.sso.region": {
+					"type": "string",
+					"default": null,
+					"description": "Your AWS region"
+				},
+				"cfn-resource-actions.sso.role": {
+					"type": "string",
+					"default": null,
+					"description": "The SSO role to assume"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

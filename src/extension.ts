@@ -4,13 +4,14 @@ import { CloudFormation, SharedIniFileCredentials } from "aws-sdk";
 import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
 import { DynamoDBActionProvider } from './actions/DynamoDBActionProvider';
 import * as vscode from 'vscode';
+import AWS = require('aws-sdk');
 const opn = require('opn');
+const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 
 let disposables: Disposable[] = [];
 
 async function getStackResources(stackName: string) {
     try {
-
         const cloudFormation = new CloudFormation(new SharedIniFileCredentials());
         const stackResourcesResponse = await cloudFormation
             .listStackResources({ StackName: stackName })
@@ -32,18 +33,34 @@ async function getStackResources(stackName: string) {
 }
 
 export async function activate(context: ExtensionContext) {
-    const config = workspace.getConfiguration('cfn-resource-actions');
+    
+    const config = vscode.workspace.getConfiguration('cfn-resource-actions');
+    
+    if (await config.get("sso.useSSO")) {
+        await ssoAuth.configure({
+            clientName: "evb-cli",
+            startUrl: await config.get("sso.startUrl"),
+            accountId: await config.get("sso.accountId"),
+            region: await config.get("sso.region")
+          });
+          AWS.config.update({
+            credentials: await ssoAuth.authenticate(await config.get("sso.role"))
+          });
+    }
+
     let stackName = null;
-    if (config.has("stackName")) {
-        stackName = config.get("stackName");
-    } else {
+    if (await config.has("stackName")) {
+        stackName = await config.get("stackName");
+    } 
+    
+    if (!stackName) {
         stackName = await window.showInputBox({ prompt: "Enter stack name", placeHolder: "Please enter the name of the deployed stack" });
-        config.update("stackName", stackName, vscode.ConfigurationTarget.WorkspaceFolder);
+        await config.update("stackName", stackName);
     }
     const resources = await getStackResources(stackName as string);
     if (resources) {
         const codelensProvider = new CodelensProvider(resources.StackResourceSummaries as StackResourceSummaries);
-        languages.registerCodeLensProvider("*", codelensProvider);
+        languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
 
         commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
             workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
