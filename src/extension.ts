@@ -14,7 +14,7 @@ const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 let disposables: Disposable[] = [];
 
 async function getStackResources(stackName: string) {
-    try {        
+    try {
         const cloudFormation = new CloudFormation();
         const stackResourcesResponse = await cloudFormation
             .listStackResources({ StackName: stackName })
@@ -36,22 +36,28 @@ async function getStackResources(stackName: string) {
 }
 
 export async function activate(context: ExtensionContext) {
+
+    const config = vscode.workspace.getConfiguration('cfn-resource-actions');
+    if (await config.get("sso.useSSO")) {
+        try {
+            await ssoAuth.configure({
+                clientName: "cfn-resource-actions",
+                startUrl: await config.get("sso.startUrl"),
+                accountId: await config.get("sso.accountId"),
+                region: await config.get("sso.region")
+            });
+            const cred =  await ssoAuth.authenticate(await config.get("sso.role"));
+            AWS.config.update({
+                credentials: cred,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const sts = new STS();
     Globals.AccountId = (await sts.getCallerIdentity().promise()).Account as string;
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
-    const config = vscode.workspace.getConfiguration('cfn-resource-actions');
-
-    if (await config.get("sso.useSSO")) {
-        await ssoAuth.configure({
-            clientName: "evb-cli",
-            startUrl: await config.get("sso.startUrl"),
-            accountId: await config.get("sso.accountId"),
-            region: await config.get("sso.region")
-        });
-        AWS.config.update({
-            credentials: await ssoAuth.authenticate(await config.get("sso.role"))
-        });
-    }
 
     let stackName = null;
     if (await config.has("stackName")) {
