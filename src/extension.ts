@@ -8,6 +8,7 @@ import { SQSActionProvider } from './actions/SQSActionProvider';
 import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
 import { SNSActionProvider } from './actions/SNSActionProvider';
+import { IActionProvider } from './actions/IActionProvider';
 const opn = require('opn');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 
@@ -92,9 +93,8 @@ export async function activate(context: ExtensionContext) {
         commands.registerCommand("cfn-resource-actions.openUrl", (url: string) => {
             opn(url);
         });
-        new DynamoDBActionProvider().registerCommands();
-        new SNSActionProvider().registerCommands();
-        new SQSActionProvider().registerCommands();
+
+        IActionProvider.registerCommands();
     }
 }
 

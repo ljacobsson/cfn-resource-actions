@@ -4,7 +4,8 @@ import { Globals } from "../util/Globals";
 
 import AWS = require("aws-sdk");
 
-export class DynamoDBActionProvider implements IActionProvider {
+@IActionProvider.register
+export class DynamoDBActionProvider {
     async registerCommands(): Promise<void> {
         const dynamodDb = new AWS.DynamoDB();
         const documentClient = new AWS.DynamoDB.DocumentClient();

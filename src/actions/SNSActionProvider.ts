@@ -3,7 +3,8 @@ import { Globals } from "../util/Globals";
 import AWS = require("aws-sdk");
 import { commands, window } from "vscode";
 
-export class SNSActionProvider implements IActionProvider {
+@IActionProvider.register
+export class SNSActionProvider {
 
     async registerCommands(): Promise<void> {
         commands.registerCommand("cfn-resource-actions.snsPublish", async (topicArn: string) => {
