@@ -20,7 +20,7 @@ export namespace IActionProvider {
     }
     export function registerActions(): any {
         const result: any = {};
-        for (const implConstructor of implementations) {
+        for (const implConstructor of GetImplementations()) {
             const impl = new implConstructor();
             const actions = impl.getActions();
             for (const key of Object.keys(actions)) {

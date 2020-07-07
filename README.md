@@ -8,6 +8,7 @@ The current version supports the following actions. More to follow in later vers
 
 * AWS::Serverless::Function / AWS::Lambda::Function:
   * Tail logs in terminal output
+  * Invoke function
 * AWS::DynamoDB::Table / AWS::Serverless::SimpleTable:
   * Query table from VS code and get the result in the output tab
 * AWS::SNS::Topic
@@ -22,8 +23,6 @@ Lambda logs and DynamoDB Query:
 
 SQS send and poll:
 ![Demo](images/example-sqs.gif)
-
-
 
 ## Installation
 `ext install ljacobsson.cfn-resource-actions`
@@ -42,6 +41,10 @@ A configured AWS CLI with the following permissions:
         "cloudformation:ListStackResources"
         "dynamodb:DescribeTable",
         "dynamodb:Query",
+        "lambda:Invoke",
+        "sns:Publish",
+        "sqs:SendMessage",
+        "sqs:ReceiveMessage",
         "logs:CreateExportTask",
       ]
     }

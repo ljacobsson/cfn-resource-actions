@@ -12,7 +12,8 @@ export class LambdaActionProvider {
             const response = await lambda.invoke({ FunctionName: functionName, Payload: payload as string}).promise();
             if (response.$response.httpResponse.statusCode === 200) {
                 window.showInformationMessage("Message was successfully sent");
-                Globals.OutputChannel.appendLine(response?.$response?.data as string);
+                Globals.OutputChannel.appendLine(JSON.stringify(response?.$response?.data as string, null, 2));
+                Globals.OutputChannel.show();
             } else {                
                 window.showInformationMessage(`Error publishing message: ${response.$response.error}`);                           
             }
@@ -28,15 +29,15 @@ export class LambdaActionProvider {
                     command: "cfn-resource-actions.openUrl",
                     arguments: [`https://${AWS.config.region}.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/${arg}?tab=configuration`]
                 }, {
-                    title: `Tail logs`,
-                    tooltip: "Go to AWS console for resource",
-                    command: "cfn-resource-actions.runShellCommand",
-                    arguments: [`aws logs tail /aws/lambda/${arg} --follow`]
-                }, {
                     title: `Invoke`,
                     tooltip: "Invoke function",
                     command: "cfn-resource-actions.lambdaInvoke",
                     arguments: [arg]
+                }, {
+                    title: `Tail logs`,
+                    tooltip: "Go to AWS console for resource",
+                    command: "cfn-resource-actions.runShellCommand",
+                    arguments: [`aws logs tail /aws/lambda/${arg} --follow`]
                 }];
             }
         };
