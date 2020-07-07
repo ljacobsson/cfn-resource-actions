@@ -11,11 +11,11 @@ export class LambdaActionProvider {
             const lambda = new AWS.Lambda();
             const response = await lambda.invoke({ FunctionName: functionName, Payload: payload as string}).promise();
             if (response.$response.httpResponse.statusCode === 200) {
-                window.showInformationMessage("Message was successfully sent");
+                window.showInformationMessage("Function was successfully invoked");
                 Globals.OutputChannel.appendLine(JSON.stringify(response?.$response?.data as string, null, 2));
                 Globals.OutputChannel.show();
             } else {                
-                window.showInformationMessage(`Error publishing message: ${response.$response.error}`);                           
+                window.showInformationMessage(`Error invoking function: ${response.$response.error}`);                           
             }
         });
     }

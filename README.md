@@ -9,6 +9,8 @@ The current version supports the following actions. More to follow in later vers
 * AWS::Serverless::Function / AWS::Lambda::Function:
   * Tail logs in terminal output
   * Invoke function
+  * F12 / ctrl+click to handler code (NodeJS/Python/.NET Core only)
+    * .NET Core if default folder based namespace structure is followed
 * AWS::DynamoDB::Table / AWS::Serverless::SimpleTable:
   * Query table from VS code and get the result in the output tab
 * AWS::SNS::Topic
@@ -17,15 +19,36 @@ The current version supports the following actions. More to follow in later vers
   * Send message to queue
   * Poll queue
 
-
+## Examples
 Lambda logs and DynamoDB Query:
 ![Demo](images/example.gif)
-
+---
 SQS send and poll:
 ![Demo](images/example-sqs.gif)
-
+---
+Lambda handler code navigation (F12/ctrl+click):
+![Demo](images/example-f12.gif)
+---
 ## Installation
 `ext install ljacobsson.cfn-resource-actions`
+
+The extension activates on the following criteria:
+```
+[
+  "onCommand:cfn-resource-actions.enableCodeLens",
+  "workspaceContains:**/serverless.template",
+  "workspaceContains:**/template.yml",
+  "workspaceContains:**/template.yaml",
+  "workspaceContains:**/template.json"
+]
+```
+
+The first time you open a project that conforms to the above rules you will get prompted to enter the stack's name. This is so the extension can fetch information about the stack from CloudFormation. This can be modified in {workspace}/.vscode/settings.json:
+```
+{
+    "cfn-resource-actions.stackName": "my-cfn-stack"
+}
+```
 
 ## Requirements
 

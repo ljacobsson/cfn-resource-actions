@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
-import { LambdaActionProvider } from './actions/LambdaActionProvider';
-import { DynamoDBActionProvider } from './actions/DynamoDBActionProvider';
-import { SNSActionProvider } from './actions/SNSActionProvider';
-import { SQSActionProvider } from './actions/SQSActionProvider';
+import { LambdaActionProvider } from '../actions/LambdaActionProvider';
+import { DynamoDBActionProvider } from '../actions/DynamoDBActionProvider';
+import { SNSActionProvider } from '../actions/SNSActionProvider';
+import { SQSActionProvider } from '../actions/SQSActionProvider';
 
 export class CodelensProvider implements vscode.CodeLensProvider {
 
@@ -15,7 +15,8 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         ...new DynamoDBActionProvider().getActions(),
         ...new SNSActionProvider().getActions(),
         ...new SQSActionProvider().getActions(),
-    }
+    };
+    
     stackResources: StackResourceSummaries;
 
     constructor(stackResources: StackResourceSummaries) {

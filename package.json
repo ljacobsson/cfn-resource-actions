@@ -19,7 +19,11 @@
 		"url": "https://github.com/mhlabs/cfn-resource-actions.git"
 	},
 	"activationEvents": [
-		"onCommand:cfn-resource-actions.enableCodeLens"
+		"onCommand:cfn-resource-actions.enableCodeLens",
+		"workspaceContains:**/serverless.template",
+		"workspaceContains:**/template.yml",
+		"workspaceContains:**/template.yaml",
+		"workspaceContains:**/template.json"
 	],
 	"main": "./out/extension.js",
 	"contributes": {

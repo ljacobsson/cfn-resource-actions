@@ -1,13 +1,11 @@
 import { ExtensionContext, languages, commands, Disposable, workspace, window } from 'vscode';
-import { CodelensProvider } from './CodelensProvider';
+import { CodelensProvider } from './providers/CodelensProvider';
+import { LambdaHandlerProvider } from './providers/LambdaHandlerProvider';
 import { CloudFormation, STS } from "aws-sdk";
 import { Globals } from "./util/Globals";
 import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
-import { DynamoDBActionProvider } from './actions/DynamoDBActionProvider';
-import { SQSActionProvider } from './actions/SQSActionProvider';
 import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
-import { SNSActionProvider } from './actions/SNSActionProvider';
 import { IActionProvider } from './actions/IActionProvider';
 const opn = require('opn');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
@@ -35,7 +33,6 @@ async function getStackResources(stackName: string) {
         console.log(err);
     }
 }
-
 export async function activate(context: ExtensionContext) {
 
     const config = vscode.workspace.getConfiguration('cfn-resource-actions');
@@ -73,7 +70,7 @@ export async function activate(context: ExtensionContext) {
     if (resources) {
         const codelensProvider = new CodelensProvider(resources.StackResourceSummaries as StackResourceSummaries);
         languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
-
+        languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
         commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
             workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
         });
@@ -82,11 +79,6 @@ export async function activate(context: ExtensionContext) {
             workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", false, true);
         });
 
-        commands.registerCommand("cfn-resource-actions.codelensAction", (args: any[]) => {
-            window.activeTerminal?.sendText("ls");
-            window.showInformationMessage(`CodeLens action clicked with args=${JSON.stringify(args)} ${args.length}`);
-
-        });
         commands.registerCommand("cfn-resource-actions.runShellCommand", (cmd: any) => {
             window.activeTerminal?.sendText(cmd);
         });
