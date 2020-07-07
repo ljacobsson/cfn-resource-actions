@@ -20,15 +20,19 @@ The current version supports the following actions. More to follow in later vers
   * Poll queue
 
 ## Examples
-Lambda logs and DynamoDB Query:
-![Demo](images/example.gif)
----
-SQS send and poll:
-![Demo](images/example-sqs.gif)
+Invoking lambda function and tailing its logs:
+![Demo](images/example-lambda.gif)
 ---
 Lambda handler code navigation (F12/ctrl+click):
 ![Demo](images/example-f12.gif)
 ---
+DynamoDB query:
+![Demo](images/example-dynamodb.gif)
+---
+SQS send and poll:
+![Demo](images/example-sqs.gif)
+---
+
 ## Installation
 `ext install ljacobsson.cfn-resource-actions`
 
@@ -43,6 +47,7 @@ The extension activates on the following criteria:
 ]
 ```
 
+**NOTE**
 The first time you open a project that conforms to the above rules you will get prompted to enter the stack's name. This is so the extension can fetch information about the stack from CloudFormation. This can be modified in {workspace}/.vscode/settings.json:
 ```
 {
@@ -69,6 +74,7 @@ A configured AWS CLI with the following permissions:
         "sqs:SendMessage",
         "sqs:ReceiveMessage",
         "logs:CreateExportTask",
+        "sts:GetCallerIdentity"
       ]
     }
   ]
