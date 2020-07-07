@@ -2,7 +2,7 @@
 	"name": "cfn-resource-actions",
 	"displayName": "CloudFormation Resource Actions",
 	"description": "Integrate with deployed resources directly from your CloudFormation template",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"publisher": "ljacobsson",
 	"engines": {
 		"vscode": "^1.46.0"
