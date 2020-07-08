@@ -18,6 +18,8 @@ The current version supports the following actions. More to follow in later vers
 * AWS::SQS::Queue
   * Send message to queue
   * Poll queue
+* AWS::StepFunctions::Statemachine
+  * Start execution
 
 ## Examples
 Invoking lambda function and tailing its logs:
