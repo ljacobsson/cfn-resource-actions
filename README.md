@@ -79,6 +79,7 @@ A configured AWS CLI with the following permissions:
         "sqs:SendMessage",
         "sqs:ReceiveMessage",
         "logs:CreateExportTask",
+        "states:StartExecution"
         "sts:GetCallerIdentity"
       ]
     }
