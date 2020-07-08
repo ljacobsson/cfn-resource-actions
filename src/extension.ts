@@ -8,10 +8,11 @@ import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
 import { IActionProvider } from './actions/IActionProvider';
 const opn = require('opn');
+const path = require('path');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 
 let disposables: Disposable[] = [];
-
+const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 async function getStackResources(stackName: string) {
     try {
         const cloudFormation = new CloudFormation();
@@ -30,12 +31,19 @@ async function getStackResources(stackName: string) {
         }
         return stackResourcesResponse;
     } catch (err) {
-        console.log(err);
+        vscode.window.showErrorMessage(err.message);
+        vscode.window.showInformationMessage(`Failed loading stack '${stackName}'. You can enter its name in .vscode/settings.json`);
+        await config.update("stackName", stackName);
+        try {
+            await vscode.workspace.openTextDocument(`${vscode.workspace.rootPath}/.vscode/settings.json`);
+        } catch (er) {
+            vscode.window.showErrorMessage(er.message);
+
+        }
+
     }
 }
 export async function activate(context: ExtensionContext) {
-
-    const config = vscode.workspace.getConfiguration('cfn-resource-actions');
     if (await config.get("sso.useSSO")) {
         try {
             await ssoAuth.configure({
@@ -44,7 +52,7 @@ export async function activate(context: ExtensionContext) {
                 accountId: await config.get("sso.accountId"),
                 region: await config.get("sso.region")
             });
-            const cred =  await ssoAuth.authenticate(await config.get("sso.role"));
+            const cred = await ssoAuth.authenticate(await config.get("sso.role"));
             AWS.config.update({
                 credentials: cred,
             });
@@ -58,19 +66,27 @@ export async function activate(context: ExtensionContext) {
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
 
     let stackName = null;
-    if (await config.has("stackName")) {
-        stackName = await config.get("stackName");
+    if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
+        stackName = workspace.rootPath?.split(path.sep)?.slice(-1)[0];
     }
 
     if (!stackName) {
-        stackName = await window.showInputBox({ prompt: "Enter stack name", placeHolder: "Please enter the name of the deployed stack" });
-        await config.update("stackName", stackName);
+        if (await config.has("stackName")) {
+            stackName = await config.get("stackName");
+        }
+
+        if (!stackName) {
+            stackName = await window.showInputBox({ prompt: "Enter stack name", placeHolder: "Please enter the name of the deployed stack" });
+            await config.update("stackName", stackName);
+        }
     }
+    
+    languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
+
     const resources = await getStackResources(stackName as string);
     if (resources) {
         const codelensProvider = new CodelensProvider(resources.StackResourceSummaries as StackResourceSummaries);
         languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
-        languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
         commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
             workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
         });

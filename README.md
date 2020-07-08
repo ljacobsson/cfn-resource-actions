@@ -55,6 +55,11 @@ The first time you open a project that conforms to the above rules you will get 
 }
 ```
 
+### Tip
+If you follow a naming convention where your deployed stack has the same name as your workspace's root folder, then enable the following global setting:
+![Demo](images/settings.png)
+
+
 ## Requirements
 
 A configured AWS CLI with the following permissions: 

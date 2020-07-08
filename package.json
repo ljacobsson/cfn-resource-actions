@@ -2,7 +2,7 @@
 	"name": "cfn-resource-actions",
 	"displayName": "CloudFormation Resource Actions",
 	"description": "Integrate with deployed resources directly from your CloudFormation template",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"publisher": "ljacobsson",
 	"engines": {
 		"vscode": "^1.46.0"
@@ -36,6 +36,11 @@
 		"configuration": {
 			"title": "CloudFormation Resource Actions",
 			"properties": {
+				"cfn-resource-actions.stackNameIsSameAsWorkspaceFolderName": {
+					"type": "boolean",
+					"default": false,
+					"description": "Select if you use a naming convention where your stack name is the same as your workspace folder name"
+				},
 				"cfn-resource-actions.stackName": {
 					"type": "string",
 					"default": null,
