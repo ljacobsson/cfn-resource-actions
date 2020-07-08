@@ -4,6 +4,7 @@ import { LambdaActionProvider } from '../actions/LambdaActionProvider';
 import { DynamoDBActionProvider } from '../actions/DynamoDBActionProvider';
 import { SNSActionProvider } from '../actions/SNSActionProvider';
 import { SQSActionProvider } from '../actions/SQSActionProvider';
+import { StepFunctionsActionProvider } from '../actions/StepFunctionsActionProvider';
 
 export class CodelensProvider implements vscode.CodeLensProvider {
 
@@ -15,6 +16,7 @@ export class CodelensProvider implements vscode.CodeLensProvider {
         ...new DynamoDBActionProvider().getActions(),
         ...new SNSActionProvider().getActions(),
         ...new SQSActionProvider().getActions(),
+        ...new StepFunctionsActionProvider().getActions(),
     };
     
     stackResources: StackResourceSummaries;
