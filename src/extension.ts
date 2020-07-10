@@ -1,5 +1,5 @@
 import { ExtensionContext, languages, commands, Disposable, workspace, window } from 'vscode';
-import { CodelensProvider } from './providers/CodelensProvider';
+import { PhysicalCodelensProvider as PhysicalCodelensProvider } from './providers/PhysicalCodelensProvider';
 import { LambdaHandlerProvider } from './providers/LambdaHandlerProvider';
 import { CloudFormation, STS } from "aws-sdk";
 import { Globals } from "./util/Globals";
@@ -7,6 +7,8 @@ import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
 import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
 import { IActionProvider } from './actions/IActionProvider';
+import { TemplateParser } from './util/TemplateParser';
+import { LogicalCodelensProvider } from './providers/LogicalCodelensProvider';
 const opn = require('opn');
 const path = require('path');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
@@ -83,9 +85,10 @@ export async function activate(context: ExtensionContext) {
     
     languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
 
+    languages.registerCodeLensProvider(['yaml', 'yml', 'template', 'json'], new LogicalCodelensProvider());
     const resources = await getStackResources(stackName as string);
     if (resources) {
-        const codelensProvider = new CodelensProvider(resources.StackResourceSummaries as StackResourceSummaries);
+        const codelensProvider = new PhysicalCodelensProvider(resources.StackResourceSummaries as StackResourceSummaries);
         languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
         commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
             workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);

@@ -34,7 +34,7 @@ export class DynamoDBActionProvider {
                 }
                 const query = await documentClient.query(params).promise();
                 if (query.Items) {
-                    
+
                     Globals.OutputChannel.appendLine(`Running query on ${tableName}`);
                     for (const row of query.Items) {
                         Globals.OutputChannel.appendLine(JSON.stringify(row, null, 2));
@@ -45,7 +45,7 @@ export class DynamoDBActionProvider {
         });
     }
 
-    public getActions() {
+    public getPhysicalActions() {
         return {
             "AWS::DynamoDB::Table": (arg: any) => {
                 return [{
@@ -61,5 +61,9 @@ export class DynamoDBActionProvider {
                 }];
             }
         };
+    }
+
+    public getLogicalActions() {
+        return null;
     }
 }

@@ -5,18 +5,20 @@ import { DynamoDBActionProvider } from '../actions/DynamoDBActionProvider';
 import { SNSActionProvider } from '../actions/SNSActionProvider';
 import { SQSActionProvider } from '../actions/SQSActionProvider';
 import { StepFunctionsActionProvider } from '../actions/StepFunctionsActionProvider';
+import { EventsActionProvider } from '../actions/EventsActionProvider';
 
-export class CodelensProvider implements vscode.CodeLensProvider {
+export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
 
     private codeLenses: vscode.CodeLens[] = [];
     private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
     private actionArgs: { [index: string]: any } = {
-        ...new LambdaActionProvider().getActions(),
-        ...new DynamoDBActionProvider().getActions(),
-        ...new SNSActionProvider().getActions(),
-        ...new SQSActionProvider().getActions(),
-        ...new StepFunctionsActionProvider().getActions(),
+        ...new LambdaActionProvider().getPhysicalActions(),
+        ...new DynamoDBActionProvider().getPhysicalActions(),
+        ...new SNSActionProvider().getPhysicalActions(),
+        ...new SQSActionProvider().getPhysicalActions(),
+        ...new StepFunctionsActionProvider().getPhysicalActions(),
+        ...new EventsActionProvider().getPhysicalActions(),
     };
     
     stackResources: StackResourceSummaries;

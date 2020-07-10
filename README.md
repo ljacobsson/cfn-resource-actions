@@ -6,20 +6,24 @@ VS Code extension that lets you perform actions against deployed AWS resources d
 
 The current version supports the following actions. More to follow in later versions:
 
-* AWS::Serverless::Function / AWS::Lambda::Function:
+* `AWS::Serverless::Function` / `AWS::Lambda::Function`:
   * Tail logs in terminal output
   * Invoke function
   * F12 / ctrl+click to handler code (NodeJS/Python/.NET Core only)
     * .NET Core if default folder based namespace structure is followed
-* AWS::DynamoDB::Table / AWS::Serverless::SimpleTable:
+* `AWS::DynamoDB::Table`
   * Query table from VS code and get the result in the output tab
-* AWS::SNS::Topic
+* `AWS::Events::Rule`
+  * Query table from VS code and get the result in the output tab
+* `AWS::SNS::Topic`
   * Publish message to topic
-* AWS::SQS::Queue
+* `AWS::SQS::Queue`
   * Send message to queue
   * Poll queue
-* AWS::StepFunctions::Statemachine
+* `AWS::StepFunctions::Statemachine`
   * Start execution
+
+_All listed resource types also provide a link to its AWS console location_
 
 ## Examples
 Invoking lambda function and tailing its logs:
@@ -76,6 +80,7 @@ A configured AWS CLI with the following permissions:
         "cloudformation:ListStackResources"
         "dynamodb:DescribeTable",
         "dynamodb:Query",
+        "schemas:DescribeSchema",
         "lambda:Invoke",
         "sns:Publish",
         "sqs:SendMessage",

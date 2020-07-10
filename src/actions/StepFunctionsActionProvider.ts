@@ -19,7 +19,7 @@ export class StepFunctionsActionProvider {
         });
     }
 
-    public getActions() {
+    public getPhysicalActions() {
         return {
             "AWS::StepFunctions::StateMachine": (arg: any) => {
                 return [{
@@ -36,4 +36,9 @@ export class StepFunctionsActionProvider {
             }
         };
     }
+
+    public getLogicalActions() {
+        return null;
+    }
+
 }

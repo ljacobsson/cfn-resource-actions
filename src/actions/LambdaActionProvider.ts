@@ -20,7 +20,7 @@ export class LambdaActionProvider {
         });
     }
 
-    public getActions() {
+    public getPhysicalActions() {
         return {
             "AWS::Lambda::Function": (arg: any) => {
                 return [{
@@ -42,4 +42,9 @@ export class LambdaActionProvider {
             }
         };
     }
+
+    public getLogicalActions() {
+        return null;
+    }
+
 }

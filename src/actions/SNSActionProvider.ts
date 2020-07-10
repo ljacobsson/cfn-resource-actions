@@ -19,7 +19,7 @@ export class SNSActionProvider {
         });
     }
 
-    public getActions() {
+    public getPhysicalActions() {
         return {
             "AWS::SNS::Topic": (arg: any) => {
                 return [{
@@ -36,4 +36,9 @@ export class SNSActionProvider {
             }
         };
     }
+
+    public getLogicalActions() {
+        return null;
+    }
+
 }

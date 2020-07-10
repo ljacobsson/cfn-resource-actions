@@ -1,5 +1,6 @@
 export interface IActionProvider {
-    getActions(): any;
+    getLogicalActions(fragment: any): any;
+    getPhysicalActions(): any;
     registerCommands(): void;
 }
 export namespace IActionProvider {
@@ -22,7 +23,7 @@ export namespace IActionProvider {
         const result: any = {};
         for (const implConstructor of GetImplementations()) {
             const impl = new implConstructor();
-            const actions = impl.getActions();
+            const actions = impl.getPhysicalActions();
             for (const key of Object.keys(actions)) {
                 result[key] = actions[key];
             }

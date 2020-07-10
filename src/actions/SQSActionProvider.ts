@@ -44,7 +44,7 @@ export class SQSActionProvider {
         });
     }
 
-    public getActions() {
+    public getPhysicalActions() {
         return {
             "AWS::SQS::Queue": (arg: any) => {
                 return [{
@@ -66,4 +66,9 @@ export class SQSActionProvider {
             }
         };
     }
+
+    public getLogicalActions() {
+        return null;
+    }
+
 }
