@@ -75,6 +75,11 @@
 					"type": "string",
 					"default": null,
 					"description": "The SSO role to assume"
+				},
+				"cfn-resource-actions.refreshRate": {
+					"type": "number",
+					"default": 60,
+					"description": "The rate at which the extension should poll CloudFormation to fetch the stack's latest state (seconds)"
 				}
 			}
 		}
@@ -104,6 +109,7 @@
 		"@mhlabs/aws-sso-client-auth": "^1.0.8",
 		"@types/opn": "^5.5.0",
 		"aws-sdk": "^2.709.0",
+		"clipboardy": "^2.3.0",
 		"opn": "^6.0.0",
 		"yaml-cfn": "^0.2.3"
 	}

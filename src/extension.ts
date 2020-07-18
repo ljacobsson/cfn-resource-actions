@@ -9,42 +9,14 @@ import AWS = require('aws-sdk');
 import { IActionProvider } from './actions/IActionProvider';
 import { TemplateParser } from './util/TemplateParser';
 import { LogicalCodelensProvider } from './providers/LogicalCodelensProvider';
+import { CloudFormationUtil } from './util/CloudFormationUtil';
 const opn = require('opn');
 const path = require('path');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
+const clipboardy = require('clipboardy');
 
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
-async function getStackResources(stackName: string) {
-    try {
-        const cloudFormation = new CloudFormation();
-        const stackResourcesResponse = await cloudFormation
-            .listStackResources({ StackName: stackName })
-            .promise();
-        let nextToken = stackResourcesResponse.NextToken;
-        while (nextToken) {
-            const more = await cloudFormation
-                .listStackResources({ StackName: stackName, NextToken: nextToken })
-                .promise();
-            if (stackResourcesResponse && stackResourcesResponse.StackResourceSummaries && more) {
-                stackResourcesResponse.StackResourceSummaries.push(...more.StackResourceSummaries as any);
-            }
-            nextToken = more.NextToken;
-        }
-        return stackResourcesResponse;
-    } catch (err) {
-        vscode.window.showErrorMessage(err.message);
-        vscode.window.showInformationMessage(`Failed loading stack '${stackName}'. You can enter its name in .vscode/settings.json`);
-        await config.update("stackName", stackName);
-        try {
-            await vscode.workspace.openTextDocument(`${vscode.workspace.rootPath}/.vscode/settings.json`);
-        } catch (er) {
-            vscode.window.showErrorMessage(er.message);
-
-        }
-
-    }
-}
 export async function activate(context: ExtensionContext) {
     if (await config.get("sso.useSSO")) {
         try {
@@ -62,6 +34,8 @@ export async function activate(context: ExtensionContext) {
             console.log(error);
         }
     }
+
+    Globals.RefreshRate = await config.get("refreshRate") as number * 1000;
 
     const sts = new STS();
     Globals.AccountId = (await sts.getCallerIdentity().promise()).Account as string;
@@ -82,31 +56,37 @@ export async function activate(context: ExtensionContext) {
             await config.update("stackName", stackName);
         }
     }
-    
+
     languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
 
     languages.registerCodeLensProvider(['yaml', 'yml', 'template', 'json'], new LogicalCodelensProvider());
-    const resources = await getStackResources(stackName as string);
-    if (resources) {
-        const codelensProvider = new PhysicalCodelensProvider(resources.StackResourceSummaries as StackResourceSummaries);
+    const stackInfo = await CloudFormationUtil.getStackInfo(stackName as string);
+    const resources = await CloudFormationUtil.getStackResources(stackName as string);
+    commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
+        workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
+    });
+
+    commands.registerCommand("cfn-resource-actions.disableCodeLens", () => {
+        workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", false, true);
+    });
+
+    commands.registerCommand("cfn-resource-actions.runShellCommand", (cmd: any) => {
+        window.activeTerminal?.sendText(cmd);
+    });
+    commands.registerCommand("cfn-resource-actions.openUrl", (url: string) => {
+        opn(url);
+    });
+    commands.registerCommand("cfn-resource-actions.clipboard", (text: string) => {
+        clipboardy.writeSync(text);
+        vscode.window.showInformationMessage(`Copied '${text}' to the clipboard`);
+    });
+
+//    if (resources && stackInfo?.Stacks) {
+        const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName);
         languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
-        commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
-            workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
-        });
+//    }
 
-        commands.registerCommand("cfn-resource-actions.disableCodeLens", () => {
-            workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", false, true);
-        });
-
-        commands.registerCommand("cfn-resource-actions.runShellCommand", (cmd: any) => {
-            window.activeTerminal?.sendText(cmd);
-        });
-        commands.registerCommand("cfn-resource-actions.openUrl", (url: string) => {
-            opn(url);
-        });
-
-        IActionProvider.registerCommands();
-    }
+    IActionProvider.registerCommands();
 }
 
 // this method is called when your extension is deactivated

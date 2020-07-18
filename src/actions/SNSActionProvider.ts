@@ -23,7 +23,7 @@ export class SNSActionProvider {
         return {
             "AWS::SNS::Topic": (arg: any) => {
                 return [{
-                    title: `💻`,
+                    title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",
                     arguments: [`https://${AWS.config.region}.console.aws.amazon.com/sns/v3/home?region=${AWS.config.region}#/topic/${arg}`]

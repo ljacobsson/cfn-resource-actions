@@ -1,11 +1,15 @@
 import * as vscode from 'vscode';
-import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
+import { StackResourceSummaries, Stack, DetectStackDriftOutput } from 'aws-sdk/clients/cloudformation';
 import { LambdaActionProvider } from '../actions/LambdaActionProvider';
 import { DynamoDBActionProvider } from '../actions/DynamoDBActionProvider';
 import { SNSActionProvider } from '../actions/SNSActionProvider';
 import { SQSActionProvider } from '../actions/SQSActionProvider';
 import { StepFunctionsActionProvider } from '../actions/StepFunctionsActionProvider';
 import { EventsActionProvider } from '../actions/EventsActionProvider';
+import AWS = require('aws-sdk');
+import { CloudFormationUtil } from '../util/CloudFormationUtil';
+import { TemplateParser } from '../util/TemplateParser';
+import { Globals } from '../util/Globals';
 
 export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
 
@@ -20,14 +24,36 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         ...new StepFunctionsActionProvider().getPhysicalActions(),
         ...new EventsActionProvider().getPhysicalActions(),
     };
-    
-    stackResources: StackResourceSummaries;
 
-    constructor(stackResources: StackResourceSummaries) {
+    stackResources: StackResourceSummaries | undefined;
+    stack: Stack | undefined;
+    driftStatus: DetectStackDriftOutput | undefined;
+
+    constructor(stackResources: StackResourceSummaries, stack: Stack | undefined, stackName: string) {
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
         });
+        setInterval(async () => {
+            this.refresh(stackName);
+        }, Globals.RefreshRate);
         this.stackResources = stackResources;
+        this.stack = stack;
+
+        vscode.commands.registerCommand("cfn-resource-actions.refresh", async (stack: any) => {
+            await this.refresh(stack);
+        });
+
+        vscode.commands.registerCommand("cfn-resource-actions.checkDrift", async (stack: any) => {
+            await CloudFormationUtil.checkDrift(stack);
+        });
+
+    }
+
+    private async refresh(stackName: string) {
+        const stacks = (await CloudFormationUtil.getStackInfo(stackName))?.Stacks;
+        this.stack = stacks ? stacks[0] : undefined;
+        this.stackResources = (await CloudFormationUtil.getStackResources(stackName))?.StackResourceSummaries;
+        this._onDidChangeCodeLenses.fire();
     }
 
     public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
@@ -38,9 +64,19 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         ) {
             try {
                 this.codeLenses = [];
+
                 const text = document.getText();
+                if (!text.includes("AWSTemplateFormatVersion")) {
+                    return [];
+                }
+
                 let matches;
-                //
+                if (!TemplateParser.isJson) {
+                    this.addStackCodeLens(document);
+                }
+                if (!this.stackResources) {
+                    return [];
+                }
                 for (const res of this.stackResources) {
                     const regex = new RegExp(`([^a-zA-Z0-9]${res.LogicalResourceId}[^a-zA-Z0-9])`, "g");
                     while ((matches = regex.exec(text)) !== null) {
@@ -55,11 +91,19 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                             new RegExp(regex)
                         );
                         try {
-                            if (range && this.actionArgs[res.ResourceType]) {
-                                for (const item of this.actionArgs[res.ResourceType](res.PhysicalResourceId)) {
+                            const actionList: any[] = [];
+                            if (range) {
+                                actionList.push({
+                                    title: `📋`,
+                                    tooltip: "Copy resource ID to clipboard",
+                                    command: "cfn-resource-actions.clipboard",
+                                    arguments: [res.PhysicalResourceId]
+                                }, ...(Object.keys(this.actionArgs).includes(res.ResourceType) ? this.actionArgs[res.ResourceType](res.PhysicalResourceId) as any[] : []));
+                                for (const item of actionList) {
                                     this.codeLenses.push(new vscode.CodeLens(range, item));
                                 }
                             }
+
                         } catch (err) {
                             console.log(err);
                         }
@@ -72,6 +116,33 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         }
         return [];
     }
+    private addStackCodeLens(document: vscode.TextDocument) {
+        const position = new vscode.Position(0, 0);
+        const range = document.getWordRangeAtPosition(
+            position
+        ) as vscode.Range;
+        this.codeLenses.push(new vscode.CodeLens(range, {
+            title: `⟳`,
+            tooltip: "Refresh",
+            command: "cfn-resource-actions.refresh",
+            arguments: [this.stack?.StackName]
+        }), new vscode.CodeLens(range, {
+            title: `Stack status: ${this.stack?.StackStatus} ${this.stack?.StackStatusReason ? `: ${this.stack.StackStatusReason}` : ""}`,
+            tooltip: "Open in AWS console",
+            command: "cfn-resource-actions.openUrl",
+            arguments: [`https://${AWS.config.region}.console.aws.amazon.com/cloudformation/home?region=${AWS.config.region}#/stacks/events?filteringText=${this.stack?.StackName}&stackId=${this.stack?.StackId}`]
+        }));
+        if (this.stack?.DriftInformation?.StackDriftStatus) {
+            this.codeLenses.push(new vscode.CodeLens(range, {
+                title: `Drift status: ${this.stack?.DriftInformation.StackDriftStatus}`,
+                tooltip: "Drift information",
+                command: "cfn-resource-actions.checkDrift",
+                arguments: [this.stack?.StackName]
+            }));
+        }
+    }
+
+
     public resolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken) {
         if (vscode.workspace.getConfiguration("cfn-resource-actions").get("enableCodeLens", true)) {
             return codeLens;

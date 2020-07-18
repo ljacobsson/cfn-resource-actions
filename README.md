@@ -23,7 +23,9 @@ The current version supports the following actions. More to follow in later vers
 * `AWS::StepFunctions::Statemachine`
   * Start execution
 
-_All listed resource types also provide a link to its AWS console location_
+_All listed resource types also provide a link to its AWS console location (`↗`)_
+
+_All resources provide a button to copy a resource's physical ID to the clipboard (📋)_
 
 ## Examples
 Invoking lambda function and tailing its logs:
@@ -37,6 +39,9 @@ DynamoDB query:
 ---
 SQS send and poll:
 ![Demo](images/example-sqs.gif)
+---
+Deploy stack and check for drift:
+![Demo](images/example-deploy.gif)
 ---
 
 ## Installation
@@ -77,7 +82,9 @@ A configured AWS CLI with the following permissions:
       "Sid": "StatementId",
       "Effect": "Allow",
       "Action": [
-        "cloudformation:ListStackResources"
+        "cloudformation:ListStackResources",
+        "cloudformation:DescribeStacks",
+        "cloudformation:DetectStackDrift",
         "dynamodb:DescribeTable",
         "dynamodb:Query",
         "schemas:DescribeSchema",
@@ -106,5 +113,4 @@ In the global settings.json file, add the following parameters:
 
 ## Known Issues
 
-Does not reload based on updates to your template. To map with the latest version of the stack, disable and re-enable the extension
-
+Deploy features does not currently work with JSON templates.

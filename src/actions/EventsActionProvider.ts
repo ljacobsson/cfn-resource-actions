@@ -35,7 +35,7 @@ export class EventsActionProvider {
                     eventBusName = arnSplit[1];
                 }
                 return [{
-                    title: `💻`,
+                    title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",                    
                     arguments: [`https://${AWS.config.region}.console.aws.amazon.com/events/home?region=${AWS.config.region}#/eventbus/${eventBusName}/rules/${ruleName}`]

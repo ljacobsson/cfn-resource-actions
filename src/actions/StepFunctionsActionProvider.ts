@@ -23,7 +23,7 @@ export class StepFunctionsActionProvider {
         return {
             "AWS::StepFunctions::StateMachine": (arg: any) => {
                 return [{
-                    title: `💻`,
+                    title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",
                     arguments: [`https://${AWS.config.region}.console.aws.amazon.com/states/home?region=${AWS.config.region}#/statemachines/view/${arg}`]

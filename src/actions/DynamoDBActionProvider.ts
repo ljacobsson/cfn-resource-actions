@@ -49,7 +49,7 @@ export class DynamoDBActionProvider {
         return {
             "AWS::DynamoDB::Table": (arg: any) => {
                 return [{
-                    title: `💻`,
+                    title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",
                     arguments: [`https://${AWS.config.region}.console.aws.amazon.com/dynamodb/home?region=${AWS.config.region}#tables:selected=${arg};tab=overview`]

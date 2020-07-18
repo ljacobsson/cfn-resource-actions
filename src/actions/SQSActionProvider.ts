@@ -48,7 +48,7 @@ export class SQSActionProvider {
         return {
             "AWS::SQS::Queue": (arg: any) => {
                 return [{
-                    title: `💻`,
+                    title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",
                     arguments: [`https://${AWS.config.region}.console.aws.amazon.com/sqs/home?region=${AWS.config.region}#`]

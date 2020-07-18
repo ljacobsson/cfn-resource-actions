@@ -1,13 +1,8 @@
 import * as vscode from 'vscode';
-import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
-import { LambdaActionProvider } from '../actions/LambdaActionProvider';
-import { DynamoDBActionProvider } from '../actions/DynamoDBActionProvider';
-import { SNSActionProvider } from '../actions/SNSActionProvider';
-import { SQSActionProvider } from '../actions/SQSActionProvider';
-import { StepFunctionsActionProvider } from '../actions/StepFunctionsActionProvider';
 import { TemplateParser } from '../util/TemplateParser';
 import { EventsActionProvider } from '../actions/EventsActionProvider';
-
+const fs = require("fs");
+const path = require("path");
 export class LogicalCodelensProvider implements vscode.CodeLensProvider {
 
     private codeLenses: vscode.CodeLens[] = [];
@@ -16,7 +11,7 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
     private actionArgs: { [index: string]: any } = {
         ...new EventsActionProvider().getLogicalActions(),
     };
-    
+
     constructor() {
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
@@ -32,9 +27,15 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
             try {
                 this.codeLenses = [];
                 const text = document.getText();
+                if (!text.includes("AWSTemplateFormatVersion")) {
+                    return [];
+                }
                 const template = TemplateParser.parse(text);
                 let matches;
                 //
+                if (!TemplateParser.isJson) {
+                    this.addStackCodeLens(document);
+                }
                 for (const resKey of Object.keys(template.Resources)) {
                     const resObj = template.Resources[resKey];
                     const regex = new RegExp(`([^a-zA-Z0-9]${resKey}[^a-zA-Z0-9])`, "g");
@@ -67,6 +68,30 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
         }
         return [];
     }
+
+    private addStackCodeLens(document: vscode.TextDocument) {
+        const position = new vscode.Position(0, 0);
+        const range = document.getWordRangeAtPosition(
+            position
+        ) as vscode.Range;
+        this.codeLenses.push(new vscode.CodeLens(range, {
+            title: `Deploy`,
+            tooltip: "Deploy using SAM CLI",
+            command: "cfn-resource-actions.runShellCommand",
+            arguments: [`sam deploy -t ${document.fileName}`]
+        }));
+        const rootPath = document.fileName.substring(0, document.fileName.lastIndexOf(path.sep));
+        if (!fs.existsSync(path.join(rootPath, "samconfig.toml"))) {
+            this.codeLenses.push(
+                new vscode.CodeLens(range, {
+                    title: `Deploy guided`,
+                    tooltip: "Deploy using SAM CLI",
+                    command: "cfn-resource-actions.runShellCommand",
+                    arguments: [`sam deploy --guided -t ${document.fileName}`]
+                }));
+        }
+    }
+
     public resolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken) {
         if (vscode.workspace.getConfiguration("cfn-resource-actions").get("enableCodeLens", true)) {
             return codeLens;
