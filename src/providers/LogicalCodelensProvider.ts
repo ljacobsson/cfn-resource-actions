@@ -33,9 +33,13 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
                 const template = TemplateParser.parse(text);
                 let matches;
                 //
-                if (!TemplateParser.isJson) {
+                //if (!TemplateParser.isJson) {
+                    try  {
                     this.addStackCodeLens(document);
-                }
+                    } catch(err) {
+                        console.log(err);
+                    }
+                //}
                 for (const resKey of Object.keys(template.Resources)) {
                     const resObj = template.Resources[resKey];
                     const regex = new RegExp(`([^a-zA-Z0-9]${resKey}[^a-zA-Z0-9])`, "g");
@@ -70,10 +74,7 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
     }
 
     private addStackCodeLens(document: vscode.TextDocument) {
-        const position = new vscode.Position(0, 0);
-        const range = document.getWordRangeAtPosition(
-            position
-        ) as vscode.Range;
+        const range = new vscode.Range (new vscode.Position(0, 0), new vscode.Position(0, 3));
         this.codeLenses.push(new vscode.CodeLens(range, {
             title: `Deploy`,
             tooltip: "Deploy using SAM CLI",

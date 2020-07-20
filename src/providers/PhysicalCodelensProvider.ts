@@ -71,9 +71,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                 }
 
                 let matches;
-                if (!TemplateParser.isJson) {
-                    this.addStackCodeLens(document);
-                }
+                this.addStackCodeLens(document);
                 if (!this.stackResources) {
                     return [];
                 }
@@ -117,10 +115,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         return [];
     }
     private addStackCodeLens(document: vscode.TextDocument) {
-        const position = new vscode.Position(0, 0);
-        const range = document.getWordRangeAtPosition(
-            position
-        ) as vscode.Range;
+        const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3));
         this.codeLenses.push(new vscode.CodeLens(range, {
             title: `⟳`,
             tooltip: "Refresh",
