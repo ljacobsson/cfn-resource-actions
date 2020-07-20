@@ -19,7 +19,10 @@ export class DynamoDBActionProvider {
                 }
 
                 const pkValue = await window.showInputBox({ prompt: `Enter value for ${pk}`, placeHolder: `Enter value for ${pk}` });
-                const skValue = await window.showInputBox({ prompt: `Enter value for ${sk}`, placeHolder: `Enter value for ${sk} (optional)` });
+                let skValue = undefined;
+                if (sk) {
+                    skValue = await window.showInputBox({ prompt: `Enter value for ${sk}`, placeHolder: `Enter value for ${sk} (optional)` });
+                }
                 const params = {
                     TableName: tableName,
                     KeyConditionExpression:
@@ -29,7 +32,7 @@ export class DynamoDBActionProvider {
                         ":skValue": skValue
                     }
                 };
-                if (!skValue && !skValue?.length) {
+                if (!skValue || skValue === "") {
                     delete params.ExpressionAttributeValues[":skValue"];
                 }
                 const query = await documentClient.query(params).promise();
