@@ -8,7 +8,6 @@ import { StepFunctionsActionProvider } from '../actions/StepFunctionsActionProvi
 import { EventsActionProvider } from '../actions/EventsActionProvider';
 import AWS = require('aws-sdk');
 import { CloudFormationUtil } from '../util/CloudFormationUtil';
-import { TemplateParser } from '../util/TemplateParser';
 import { Globals } from '../util/Globals';
 
 export class PhysicalCodelensProvider implements vscode.CodeLensProvider {

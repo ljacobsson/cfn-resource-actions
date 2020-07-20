@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { TemplateParser } from '../util/TemplateParser';
 import { EventsActionProvider } from '../actions/EventsActionProvider';
+import { DrawIoActionProvider } from '../actions/DrawIoActionProvider';
 const fs = require("fs");
 const path = require("path");
 export class LogicalCodelensProvider implements vscode.CodeLensProvider {
@@ -10,6 +11,7 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
     public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
     private actionArgs: { [index: string]: any } = {
         ...new EventsActionProvider().getLogicalActions(),
+        ...new DrawIoActionProvider().getLogicalActions(),
     };
 
     constructor() {
@@ -34,11 +36,11 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
                 let matches;
                 //
                 //if (!TemplateParser.isJson) {
-                    try  {
+                try {
                     this.addStackCodeLens(document);
-                    } catch(err) {
-                        console.log(err);
-                    }
+                } catch (err) {
+                    console.log(err);
+                }
                 //}
                 for (const resKey of Object.keys(template.Resources)) {
                     const resObj = template.Resources[resKey];
@@ -74,13 +76,16 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
     }
 
     private addStackCodeLens(document: vscode.TextDocument) {
-        const range = new vscode.Range (new vscode.Position(0, 0), new vscode.Position(0, 3));
+        const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 3));
         this.codeLenses.push(new vscode.CodeLens(range, {
             title: `Deploy`,
             tooltip: "Deploy using SAM CLI",
             command: "cfn-resource-actions.runShellCommand",
             arguments: [`sam deploy -t ${document.fileName}`]
         }));
+        for(const arg of this.actionArgs["Global"](document)) {
+            this.codeLenses.push(new vscode.CodeLens(range, arg));
+        }        
         const rootPath = document.fileName.substring(0, document.fileName.lastIndexOf(path.sep));
         if (!fs.existsSync(path.join(rootPath, "samconfig.toml"))) {
             this.codeLenses.push(
