@@ -43,7 +43,8 @@ SQS send and poll:
 Deploy stack and check for drift:
 ![Demo](images/example-deploy.gif)
 ---
-Visualize stack using the fantastic [Draw.io Integration](https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio) extension by Henning Dietrichs. (You'll need to install the extension to visualize):
+Visualize stack:
+Using the fantastic [Draw.io Integration](https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio) extension by Henning Dietrichs. (You'll need to install the extension to visualize)
 ![Demo](images/example-visualize.gif)
 ---
 
