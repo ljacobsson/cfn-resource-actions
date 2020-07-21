@@ -28,25 +28,26 @@ _All listed resource types also provide a link to its AWS console location (`↗
 _All resources provide a button to copy a resource's physical ID to the clipboard (📋)_
 
 ## Examples
-Invoking lambda function and tailing its logs:
+
+### Invoking lambda function and tailing its logs:
 ![Demo](images/example-lambda.gif)
----
-Lambda handler code navigation (F12/ctrl+click):
+
+### Lambda handler code navigation (F12/ctrl+click):
 ![Demo](images/example-f12.gif)
----
-DynamoDB query:
+
+### DynamoDB query:
 ![Demo](images/example-dynamodb.gif)
----
-SQS send and poll:
+
+### SQS send and poll:
 ![Demo](images/example-sqs.gif)
----
-Deploy stack and check for drift:
+
+### Deploy stack and check for drift:
 ![Demo](images/example-deploy.gif)
----
-Visualize stack:
+
+### Visualize stack:
 ![Demo](images/example-visualize.gif)
+
 Using the fantastic [Draw.io Integration](https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio) extension by Henning Dietrichs. (You'll need to install the extension to visualize)
----
 
 ## Installation
 `ext install ljacobsson.cfn-resource-actions`
