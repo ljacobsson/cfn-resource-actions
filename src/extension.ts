@@ -26,10 +26,15 @@ export async function activate(context: ExtensionContext) {
                 accountId: await config.get("sso.accountId"),
                 region: await config.get("sso.region")
             });
-            const cred = await ssoAuth.authenticate(await config.get("sso.role"));
-            AWS.config.update({
-                credentials: cred,
-            });
+            try {
+                const cred = await ssoAuth.authenticate(await config.get("sso.role"));
+                AWS.config.update({
+                    credentials: cred,
+                });
+            } catch (err) {
+                console.log(err);
+                window.showErrorMessage(", mn,mn" + err);
+            }
         } catch (error) {
             console.log(error);
         }
@@ -38,7 +43,11 @@ export async function activate(context: ExtensionContext) {
     Globals.RefreshRate = await config.get("refreshRate") as number * 1000;
 
     const sts = new STS();
-    Globals.AccountId = (await sts.getCallerIdentity().promise()).Account as string;
+    try {
+        Globals.AccountId = (await sts.getCallerIdentity().promise()).Account as string;
+    } catch (err) {
+        window.showErrorMessage(err);
+    }
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
 
     let stackName = null;
@@ -81,10 +90,10 @@ export async function activate(context: ExtensionContext) {
         vscode.window.showInformationMessage(`Copied '${text}' to the clipboard`);
     });
 
-//    if (resources && stackInfo?.Stacks) {
-        const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName);
-        languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
-//    }
+    //    if (resources && stackInfo?.Stacks) {
+    const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName);
+    languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
+    //    }
 
     IActionProvider.registerCommands();
 }
