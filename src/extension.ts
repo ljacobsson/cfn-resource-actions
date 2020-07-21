@@ -33,7 +33,7 @@ export async function activate(context: ExtensionContext) {
                 });
             } catch (err) {
                 console.log(err);
-                window.showErrorMessage(", mn,mn" + err);
+                window.showErrorMessage(err);
             }
         } catch (error) {
             console.log(error);
