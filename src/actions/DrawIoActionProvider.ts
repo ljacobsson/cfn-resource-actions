@@ -20,6 +20,8 @@ export class DrawIoActionProvider {
             types = [...new Set(types)].sort();
             filterConfig.resourceTypesToInclude = types;
             filterConfig.resourceNamesToInclude = resources;
+            console.log(types);
+            mxGraph.reset();
             const xml = mxGraph.renderTemplate(template);
             const fileName = `${document.fileName}.dio`;
             fs.writeFileSync(fileName, xml);
