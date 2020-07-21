@@ -51,7 +51,7 @@ export class SQSActionProvider {
                     title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",
-                    arguments: [`https://${AWS.config.region}.console.aws.amazon.com/sqs/home?region=${AWS.config.region}#`]
+                    arguments: [`https://${AWS.config.region}.console.aws.amazon.com/sqs/v2/home?region=${AWS.config.region}#/queues/${encodeURIComponent(arg)}`]
                 }, {
                     title: `Send`,
                     tooltip: "Send a message to the queue",
