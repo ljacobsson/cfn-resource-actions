@@ -27,7 +27,7 @@ export class CloudFormationUtil {
 
     static async getStackResources(stackName: string) {
         const cloudFormation = this.cloudFormation || new AWS.CloudFormation();
-
+        
         try {
             const stackResourcesResponse = await cloudFormation
                 .listStackResources({ StackName: stackName })
@@ -46,8 +46,8 @@ export class CloudFormationUtil {
         } catch (err) {
             if (!this.suppressError) {
                 this.suppressError = true;
-                vscode.window.showErrorMessage(err.message);
-                vscode.window.showInformationMessage(`Failed loading stack '${stackName}'. You can enter its name in .vscode/settings.json`);
+                await vscode.window.showErrorMessage(err.message);
+                await vscode.window.showInformationMessage(`Failed loading stack '${stackName}'. You can enter its name in .vscode/settings.json`);
                 await config.update("stackName", stackName);
                 try {
                     await vscode.workspace.openTextDocument(`${vscode.workspace.rootPath}/.vscode/settings.json`);

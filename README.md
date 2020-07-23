@@ -105,17 +105,3 @@ A configured AWS CLI with the following permissions:
   ]
 }
 ```
-
-## Using AWS SSO auth
-In the global settings.json file, add the following parameters:
-```
-"cfn-resource-actions.sso.region": "eu-west-1",
-"cfn-resource-actions.sso.role": "RoleToAssume",
-"cfn-resource-actions.sso.startUrl": "https://you-sso-subdomain.awsapps.com/start",
-"cfn-resource-actions.sso.accountId": "123456789012",
-"cfn-resource-actions.sso.useSSO": true
-```
-
-## Known Issues
-
-Deploy features does not currently work with JSON templates.

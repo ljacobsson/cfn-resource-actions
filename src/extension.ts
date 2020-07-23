@@ -7,50 +7,38 @@ import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
 import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
 import { IActionProvider } from './actions/IActionProvider';
-import { TemplateParser } from './util/TemplateParser';
 import { LogicalCodelensProvider } from './providers/LogicalCodelensProvider';
 import { CloudFormationUtil } from './util/CloudFormationUtil';
 const opn = require('opn');
 const path = require('path');
 const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 const clipboardy = require('clipboardy');
+const sharedIniFileLoader = require("@aws-sdk/shared-ini-file-loader");
+
 
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
+const onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+
 export async function activate(context: ExtensionContext) {
-    if (await config.get("sso.useSSO")) {
-        try {
-            await ssoAuth.configure({
-                clientName: "cfn-resource-actions",
-                startUrl: await config.get("sso.startUrl"),
-                accountId: await config.get("sso.accountId"),
-                region: await config.get("sso.region")
-            });
-            try {
-                const cred = await ssoAuth.authenticate(await config.get("sso.role"));
-                AWS.config.update({
-                    credentials: cred,
-                });
-            } catch (err) {
-                console.log(err);
-                window.showErrorMessage(err);
-            }
-        } catch (error) {
-            console.log(error);
-        }
+    try {
+        await authenticate();
+    } catch (err) {
+        await window.showErrorMessage(err);
     }
 
     Globals.RefreshRate = await config.get("refreshRate") as number * 1000;
 
     const sts = new STS();
     try {
-        Globals.AccountId = (await sts.getCallerIdentity().promise()).Account as string;
+        const stsResponse = await sts.getCallerIdentity().promise();
+        Globals.AccountId = stsResponse.Account as string;
     } catch (err) {
-        window.showErrorMessage(err);
+        await window.showErrorMessage(err);
     }
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
 
-    let stackName = null;
+    let stackName: string | null | undefined = null;
     if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
         stackName = workspace.rootPath?.split(path.sep)?.slice(-1)[0];
     }
@@ -69,14 +57,22 @@ export async function activate(context: ExtensionContext) {
     languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
 
     languages.registerCodeLensProvider(['yaml', 'yml', 'template', 'json'], new LogicalCodelensProvider());
-    const stackInfo = await CloudFormationUtil.getStackInfo(stackName as string);
-    const resources = await CloudFormationUtil.getStackResources(stackName as string);
     commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
         workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
     });
 
     commands.registerCommand("cfn-resource-actions.disableCodeLens", () => {
         workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", false, true);
+    });
+
+    commands.registerCommand("cfn-resource-actions.awsProfile", async (cmd: any) => {
+        const configFiles = await sharedIniFileLoader.loadSharedConfigFiles();
+        const profile = await vscode.window.showQuickPick(Object.keys(configFiles.configFile));
+        await config.update("AWSProfile", profile);
+        await authenticate(profile);
+        CloudFormationUtil.cloudFormation = new CloudFormation();
+        await commands.executeCommand("cfn-resource-actions.refresh", stackName as string);
+        window.showInformationMessage(`Switched to profile: ${profile}`);
     });
 
     commands.registerCommand("cfn-resource-actions.runShellCommand", (cmd: any) => {
@@ -89,13 +85,41 @@ export async function activate(context: ExtensionContext) {
         clipboardy.writeSync(text);
         vscode.window.showInformationMessage(`Copied '${text}' to the clipboard`);
     });
+    try {
+        const stackInfo = await CloudFormationUtil.getStackInfo(stackName as string);
+        const resources = await CloudFormationUtil.getStackResources(stackName as string);
 
-    //    if (resources && stackInfo?.Stacks) {
-    const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName);
-    languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
-    //    }
+        //    if (resources && stackInfo?.Stacks) {
+        const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName as string);
+        languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
+        //    }
+    } catch (err) {
+        window.showErrorMessage(err);
+    }
 
     IActionProvider.registerCommands();
+}
+
+async function authenticate(profile?: any) {
+    try {
+        profile = profile || await config.get("AWSProfile");
+        const authConfig = await ssoAuth.requestAuth("cfn-resource-actions", profile);
+        if (authConfig) {
+            AWS.config.update({
+                credentials: authConfig.credentials,
+                region: authConfig.region
+            });
+        } else {
+            AWS.config.update({
+                credentials: null,
+                region: authConfig.region
+            });
+        }
+    }
+    catch (err) {
+        await window.showWarningMessage(err);
+        console.log(err);
+    }
 }
 
 // this method is called when your extension is deactivated

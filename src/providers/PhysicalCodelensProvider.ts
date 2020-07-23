@@ -45,10 +45,9 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         vscode.commands.registerCommand("cfn-resource-actions.checkDrift", async (stack: any) => {
             await CloudFormationUtil.checkDrift(stack);
         });
-
     }
 
-    private async refresh(stackName: string) {
+    private async refresh(stackName: string) {        
         const stacks = (await CloudFormationUtil.getStackInfo(stackName))?.Stacks;
         this.stack = stacks ? stacks[0] : undefined;
         this.stackResources = (await CloudFormationUtil.getStackResources(stackName))?.StackResourceSummaries;
