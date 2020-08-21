@@ -11,11 +11,9 @@ import { LogicalCodelensProvider } from './providers/LogicalCodelensProvider';
 import { CloudFormationUtil } from './util/CloudFormationUtil';
 const opn = require('opn');
 const path = require('path');
-const ssoAuth = require("@mhlabs/aws-sso-client-auth");
 const clipboardy = require('clipboardy');
 const sharedIniFileLoader = require("@aws-sdk/shared-ini-file-loader");
-
-
+require("@mhlabs/aws-sdk-sso");
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 const onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
@@ -57,22 +55,28 @@ export async function activate(context: ExtensionContext) {
     languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
 
     languages.registerCodeLensProvider(['yaml', 'yml', 'template', 'json'], new LogicalCodelensProvider());
-    commands.registerCommand("cfn-resource-actions.enableCodeLens", () => {
-        workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", true, true);
+    commands.registerCommand("cfn-resource-actions.enable", () => {
+        workspace.getConfiguration("cfn-resource-actions").update("enable", true, true);
     });
 
     commands.registerCommand("cfn-resource-actions.disableCodeLens", () => {
-        workspace.getConfiguration("cfn-resource-actions").update("enableCodeLens", false, true);
+        workspace.getConfiguration("cfn-resource-actions").update("enable", false, true);
     });
-
     commands.registerCommand("cfn-resource-actions.awsProfile", async (cmd: any) => {
-        const configFiles = await sharedIniFileLoader.loadSharedConfigFiles();
-        const profile = await vscode.window.showQuickPick(Object.keys(configFiles.configFile));
-        await config.update("AWSProfile", profile);
-        await authenticate(profile);
-        CloudFormationUtil.cloudFormation = new CloudFormation();
-        await commands.executeCommand("cfn-resource-actions.refresh", stackName as string);
-        window.showInformationMessage(`Switched to profile: ${profile}`);
+        try {
+            window.showInformationMessage("cccc");
+            const configFiles = await sharedIniFileLoader.loadSharedConfigFiles();
+            const profile = await vscode.window.showQuickPick(Object.keys(configFiles.configFile));
+            await config.update("AWSProfile", profile);
+            process.env.AWS_PROFILE = profile;
+            const creds = await (AWS.config.credentialProvider as any).resolvePromise();
+            await creds.refreshPromise();
+            CloudFormationUtil.cloudFormation = new CloudFormation({ credentials: creds });
+            await commands.executeCommand("cfn-resource-actions.refresh", stackName as string);
+            window.showInformationMessage(`Switched to profile: ${profile}`);
+        } catch (err) {
+            window.showInformationMessage(err.message);
+        }
     });
 
     commands.registerCommand("cfn-resource-actions.runShellCommand", (cmd: any) => {
@@ -102,19 +106,8 @@ export async function activate(context: ExtensionContext) {
 
 async function authenticate(profile?: any) {
     try {
-        profile = profile || await config.get("AWSProfile");
-        const authConfig = await ssoAuth.requestAuth("cfn-resource-actions", profile);
-        if (authConfig) {
-            AWS.config.update({
-                credentials: authConfig.credentials,
-                region: authConfig.region
-            });
-        } else {
-            AWS.config.update({
-                credentials: null,
-                region: authConfig.region
-            });
-        }
+        process.env.AWS_PROFILE = profile || await config.get("AWSProfile");
+        AWS.config.credentialProvider?.providers.unshift(new (AWS as any).SingleSignOnCredentials());
     }
     catch (err) {
         await window.showWarningMessage(err);

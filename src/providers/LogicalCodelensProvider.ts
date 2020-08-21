@@ -24,7 +24,7 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
         if (
             vscode.workspace
                 .getConfiguration("cfn-resource-actions")
-                .get("enableCodeLens", true)
+                .get("enable", true)
         ) {
             try {
                 this.codeLenses = [];
@@ -99,7 +99,7 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
     }
 
     public resolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken) {
-        if (vscode.workspace.getConfiguration("cfn-resource-actions").get("enableCodeLens", true)) {
+        if (vscode.workspace.getConfiguration("cfn-resource-actions").get("enable", true)) {
             return codeLens;
         }
         return null;

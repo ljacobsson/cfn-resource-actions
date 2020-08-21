@@ -2,7 +2,7 @@
 	"name": "cfn-resource-actions",
 	"displayName": "CloudFormation Resource Actions",
 	"description": "Integrate with deployed resources directly from your CloudFormation template",
-	"version": "0.0.20",
+	"version": "0.0.21",
 	"publisher": "ljacobsson",
 	"engines": {
 		"vscode": "^1.46.0"
@@ -19,7 +19,7 @@
 		"url": "https://github.com/mhlabs/cfn-resource-actions.git"
 	},
 	"activationEvents": [
-		"onCommand:cfn-resource-actions.enableCodeLens",
+		"onCommand:cfn-resource-actions.enable",
 		"workspaceContains:**/serverless.template",
 		"workspaceContains:**/template.yml",
 		"workspaceContains:**/template.yaml",
@@ -91,7 +91,7 @@
 	},
 	"dependencies": {
 		"@aws-sdk/shared-ini-file-loader": "0.1.0-preview.1",
-		"@mhlabs/aws-sso-client-auth": "^1.1.3",
+		"@mhlabs/aws-sdk-sso": "0.0.10",
 		"@mhlabs/cfn-diagram": "^1.0.10",
 		"@types/opn": "^5.5.0",
 		"aws-sdk": "^2.709.0",

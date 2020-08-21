@@ -55,7 +55,7 @@ Using the fantastic [Draw.io Integration](https://marketplace.visualstudio.com/i
 The extension activates on the following criteria:
 ```
 [
-  "onCommand:cfn-resource-actions.enableCodeLens",
+  "onCommand:cfn-resource-actions.enable",
   "workspaceContains:**/serverless.template",
   "workspaceContains:**/template.yml",
   "workspaceContains:**/template.yaml",
