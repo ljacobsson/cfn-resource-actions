@@ -64,7 +64,6 @@ export async function activate(context: ExtensionContext) {
     });
     commands.registerCommand("cfn-resource-actions.awsProfile", async (cmd: any) => {
         try {
-            window.showInformationMessage("cccc");
             const configFiles = await sharedIniFileLoader.loadSharedConfigFiles();
             const profile = await vscode.window.showQuickPick(Object.keys(configFiles.configFile));
             await config.update("AWSProfile", profile);

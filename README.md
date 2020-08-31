@@ -49,6 +49,11 @@ _All resources provide a button to copy a resource's physical ID to the clipboar
 
 Using the fantastic [Draw.io Integration](https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio) extension by Henning Dietrichs. (You'll need to install the extension to visualize)
 
+### Test EventBridge rules:
+![Demo](images/example-events.gif)
+
+This uses the backend for evb-cli. For this feature to work, please follow the instructions to set up local debugging from [evb-cli's readme](https://github.com/mhlabs/evb-cli/blob/master/README.md#local-debugging)
+
 ## Installation
 `ext install ljacobsson.cfn-resource-actions`
 
