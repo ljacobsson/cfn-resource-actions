@@ -32,6 +32,9 @@ export class EventsActionProvider {
                 localSubscriber.disconnect();
                 Globals.OutputChannel.appendLine("Closed connection");
                 socketOpen = false;
+                for (const timeout of timeouts) {
+                    clearTimeout(timeout);
+                }
                 return;
             }
             Globals.OutputChannel.appendLine("No open connection");
@@ -44,8 +47,8 @@ export class EventsActionProvider {
             }
             Globals.OutputChannel.show();
             fragment.Properties.EventPattern = JSON.stringify(fragment.Properties.EventPattern);
-            for(const timeout of timeouts) {
-                timeout.unref();
+            for (const timeout of timeouts) {
+                clearTimeout(timeout);
             }
             timeouts.push(setTimeout(function () {
                 if (socketOpen) {
