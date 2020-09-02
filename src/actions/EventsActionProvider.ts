@@ -57,7 +57,7 @@ export class EventsActionProvider {
                     socketOpen = false;
                 }
             }, 300000));
-            const logger = { log: (msg: string) => Globals.OutputChannel.appendLine(msg), error: Globals.OutputChannel.appendLine };
+            const logger = { log: (msg: string) => Globals.OutputChannel.appendLine(msg), error: (msg: string) => Globals.OutputChannel.appendLine(msg) };
             socketOpen = true;
             Globals.OutputChannel.appendLine("Subscribing to rule for 5 minutes");
             await localSubscriber.initConnection(
