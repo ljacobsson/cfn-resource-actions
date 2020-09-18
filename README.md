@@ -11,6 +11,7 @@ The current version supports the following actions. More to follow in later vers
   * Invoke function
   * F12 / ctrl+click to handler code (NodeJS/Python/.NET Core only)
     * .NET Core if default folder based namespace structure is followed
+  * See XRay statistics of average duration, error rate and throttle rate
 * `AWS::DynamoDB::Table`
   * Query table from VS code and get the result in the output tab
 * `AWS::Events::Rule`
@@ -103,8 +104,9 @@ A configured AWS CLI with the following permissions:
         "sqs:SendMessage",
         "sqs:ReceiveMessage",
         "logs:CreateExportTask",
-        "states:StartExecution"
-        "sts:GetCallerIdentity"
+        "states:StartExecution",
+        "sts:GetCallerIdentity",
+        "xray:getTraceSummaries"
       ]
     }
   ]

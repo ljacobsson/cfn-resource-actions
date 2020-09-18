@@ -2,7 +2,7 @@
 	"name": "cfn-resource-actions",
 	"displayName": "CloudFormation Resource Actions",
 	"description": "Integrate with deployed resources directly from your CloudFormation template",
-	"version": "0.0.24",
+	"version": "0.0.27",
 	"publisher": "ljacobsson",
 	"engines": {
 		"vscode": "^1.46.0"
@@ -91,8 +91,9 @@
 	},
 	"dependencies": {
 		"@aws-sdk/shared-ini-file-loader": "0.1.0-preview.1",
-		"@mhlabs/aws-sdk-sso": "0.0.11",
+		"@mhlabs/aws-sdk-sso": "0.0.12",
 		"@mhlabs/cfn-diagram": "^1.0.10",
+		"@mhlabs/cwlogs-cli": "^1.0.2",
 		"@mhlabs/evb-cli": "^1.1.10",
 		"@types/opn": "^5.5.0",
 		"aws-sdk": "^2.742.0",

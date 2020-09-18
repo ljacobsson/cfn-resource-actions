@@ -9,6 +9,7 @@ import { EventsActionProvider } from '../actions/EventsActionProvider';
 import AWS = require('aws-sdk');
 import { CloudFormationUtil } from '../util/CloudFormationUtil';
 import { Globals } from '../util/Globals';
+import { XRayUtil } from '../util/XRayUtil';
 
 export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
 
@@ -51,6 +52,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         const stacks = (await CloudFormationUtil.getStackInfo(stackName))?.Stacks;
         this.stack = stacks ? stacks[0] : undefined;
         this.stackResources = (await CloudFormationUtil.getStackResources(stackName))?.StackResourceSummaries;
+        await XRayUtil.getStats(this.stackResources);
         this._onDidChangeCodeLenses.fire();
     }
 

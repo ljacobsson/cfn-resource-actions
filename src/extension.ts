@@ -9,6 +9,7 @@ import AWS = require('aws-sdk');
 import { IActionProvider } from './actions/IActionProvider';
 import { LogicalCodelensProvider } from './providers/LogicalCodelensProvider';
 import { CloudFormationUtil } from './util/CloudFormationUtil';
+import { XRayUtil } from './util/XRayUtil';
 const opn = require('opn');
 const path = require('path');
 const clipboardy = require('clipboardy');
@@ -17,6 +18,8 @@ require("@mhlabs/aws-sdk-sso");
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 const onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+
+process.env.AWS_SDK_LOAD_CONFIG = "1";
 
 export async function activate(context: ExtensionContext) {
     try {
@@ -91,6 +94,7 @@ export async function activate(context: ExtensionContext) {
     try {
         const stackInfo = await CloudFormationUtil.getStackInfo(stackName as string);
         const resources = await CloudFormationUtil.getStackResources(stackName as string);
+        await XRayUtil.getStats(resources?.StackResourceSummaries);
 
         //    if (resources && stackInfo?.Stacks) {
         const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName as string);
