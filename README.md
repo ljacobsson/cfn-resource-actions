@@ -28,6 +28,8 @@ _All listed resource types also provide a link to its AWS console location (`↗
 
 _All resources provide a button to copy a resource's physical ID to the clipboard (📋)_
 
+_All resources provide a menu that lists the resources referrable attributes along with a link to the documentation (☰)_
+
 ## Examples
 
 ### Invoking lambda function and tailing its logs:
