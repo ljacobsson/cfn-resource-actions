@@ -2,6 +2,9 @@ import * as vscode from 'vscode';
 import { TemplateParser } from '../util/TemplateParser';
 import { EventsActionProvider } from '../actions/EventsActionProvider';
 import { DrawIoActionProvider } from '../actions/DrawIoActionProvider';
+const cfnSpec = require('../../resources/cfn-resource-specification.json');
+const samSpec = require('../../resources/sam-resource-specification.json');
+
 const fs = require("fs");
 const path = require("path");
 export class LogicalCodelensProvider implements vscode.CodeLensProvider {
@@ -15,6 +18,23 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
     };
 
     constructor() {
+        vscode.commands.registerCommand("cfn-resource-actions.openResourceMenu", async (name, type, docs) => {
+            const items = [{ label: "Go to documentation ↗", detail: "Open in browser", value: docs.Documentation, action: "cfn-resource-actions.openUrl" }];
+            for (const att of Object.keys(docs.Attributes || [])) {
+                const fnAtt = TemplateParser.isJson ? `{ "Fn::GetAtt": ["${name}", "${att}"] }` : `!GetAtt ${name}.${att}`;
+                items.push({
+                    label: `📋${att}`,
+                    detail: `Copy ${fnAtt} to clipboard`,
+                    value: fnAtt,
+                    action: "cfn-resource-actions.clipboard"
+                });
+            }
+            const item = await vscode.window.showQuickPick(items);
+            if (item) {
+                await vscode.commands.executeCommand(item.action, item.value);
+            }
+        });
+
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
         });
@@ -57,9 +77,20 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
                             new RegExp(regex)
                         );
                         try {
-                            if (range && this.actionArgs[resObj.Type]) {
-                                for (const item of this.actionArgs[resObj.Type](resObj)) {
-                                    this.codeLenses.push(new vscode.CodeLens(range, item));
+                            if (range) {
+                                const docs = {...cfnSpec.ResourceTypes, ...samSpec.ResourceTypes}[resObj.Type];
+                                if (docs) {
+                                    this.codeLenses.push(new vscode.CodeLens(range, {
+                                        title: `☰`,
+                                        tooltip: "Open documentation in browser",
+                                        command: "cfn-resource-actions.openResourceMenu",
+                                        arguments: [resKey, resObj.Type, docs]
+                                    }));
+                                }
+                                if (this.actionArgs[resObj.Type]) {
+                                    for (const item of this.actionArgs[resObj.Type](resObj)) {
+                                        this.codeLenses.push(new vscode.CodeLens(range, item));
+                                    }
                                 }
                             }
                         } catch (err) {
@@ -83,9 +114,9 @@ export class LogicalCodelensProvider implements vscode.CodeLensProvider {
             command: "cfn-resource-actions.runShellCommand",
             arguments: [`sam deploy -t ${document.fileName}`]
         }));
-        for(const arg of this.actionArgs["Global"](document)) {
+        for (const arg of this.actionArgs["Global"](document)) {
             this.codeLenses.push(new vscode.CodeLens(range, arg));
-        }        
+        }
         const rootPath = document.fileName.substring(0, document.fileName.lastIndexOf(path.sep));
         if (!fs.existsSync(path.join(rootPath, "samconfig.toml"))) {
             this.codeLenses.push(

@@ -39,7 +39,8 @@ export async function activate(context: ExtensionContext) {
     }
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
 
-    let stackName: string | null | undefined = null;
+    let stackName: string | null | undefined = null;    
+
     if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
         stackName = workspace.rootPath?.split(path.sep)?.slice(-1)[0];
     }
