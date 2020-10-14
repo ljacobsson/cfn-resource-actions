@@ -1,0 +1,55 @@
+{
+    "ResourceTypes": {
+        "AWS::Serverless::Function": {
+            "Attributes": {
+                "Alias": {
+                    "PrimitiveType": "String"
+                },
+                "Version": {
+                    "PrimitiveType": "String"
+                },
+                "DestinationTopic": {
+                    "PrimitiveType": "String"
+                },
+                "DestinationQueue": {
+                    "PrimitiveType": "String"
+                }
+            },
+            "Documentation": "https://github.com/aws/serverless-application-model/blob/master/versions/2016-10-31.md#referable-properties-of-serverless-function"
+        },
+        "AWS::Serverless::HttpApi": {
+            "Attributes": {
+                "Stage": {
+                    "PrimitiveType": "String"
+                },
+                "DomainName": {
+                    "PrimitiveType": "String"
+                }
+            },
+            "Documentation": "https://github.com/aws/serverless-application-model/blob/master/versions/2016-10-31.md#referable-properties-of-serverless-function"
+        },
+        "AWS::Serverless::RestApi": {
+            "Attributes": {
+                "Alias": {
+                    "Stage": "String"
+                },
+                "Deployment": {
+                    "PrimitiveType": "String"
+                },
+                "DomainName": {
+                    "PrimitiveType": "String"
+                },
+                "UsagePlan": {
+                    "PrimitiveType": "String"
+                },
+                "UsagePlanKey": {
+                    "PrimitiveType": "String"
+                },
+                "ApiKey": {
+                    "PrimitiveType": "String"
+                }
+            },
+            "Documentation": "https://github.com/aws/serverless-application-model/blob/master/versions/2016-10-31.md#referable-properties-of-serverless-function"
+        }
+    }
+}
