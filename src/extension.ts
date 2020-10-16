@@ -15,6 +15,8 @@ const path = require('path');
 const clipboardy = require('clipboardy');
 const sharedIniFileLoader = require("@aws-sdk/shared-ini-file-loader");
 require("@mhlabs/aws-sdk-sso");
+const fs = require("fs");
+const ini = require("ini");
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 const onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
@@ -39,10 +41,20 @@ export async function activate(context: ExtensionContext) {
     }
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
 
-    let stackName: string | null | undefined = null;    
+    let stackName: string | null | undefined = null;
 
     if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
         stackName = workspace.rootPath?.split(path.sep)?.slice(-1)[0];
+    } else {
+        try {
+            const filePath = path.join(workspace.rootPath, "samconfig.toml");
+            if (fs.existsSync(filePath)) {
+                const samConfig = ini.parse(fs.readFileSync(filePath, 'utf-8'));
+                stackName = samConfig.default.deploy.parameters.stack_name;
+            }
+        } catch (ex) {
+            console.log(ex);
+        }
     }
 
     if (!stackName) {
