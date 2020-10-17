@@ -6,7 +6,7 @@ export class PythonParser implements ICodeUriParser {
 
     parse(match: string, codeUri: string): any {
         const filePath = match.split(".");
-        const handlerName = filePath.pop() as string;
+        const handlerName = (filePath.pop() as string).replace(/\W/g, '');
         const lambdaDefinitions = {} as any;
         
         const basePath = path.join(__dirname, "..", "..", "..", "templates", "python");

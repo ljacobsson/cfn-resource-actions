@@ -9,7 +9,7 @@ export class DotNetParser implements ICodeUriParser {
     parse(match: string): any {
         const matchSplit = match.split("::");
         let uri = matchSplit[1];
-        let handlerName = matchSplit[2];
+        let handlerName = matchSplit[2].replace(/\W/g, '');
         const split = uri.split(".");
         const filePath = split.join("/");
         const lambdaDefinitions = {} as any;
