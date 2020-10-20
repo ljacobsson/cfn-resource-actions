@@ -69,9 +69,11 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         if (fs.existsSync(filePath)) {
             const samConfig = ini.parse(fs.readFileSync(filePath, 'utf-8'));
             const newStackName = samConfig.default.deploy.parameters.stack_name;
-            if (newStackName !== this.stackName) {
+            const newRegion = samConfig.default.deploy.parameters.region;
+            if (newStackName !== this.stackName || newRegion !== AWS.config.region) {
                 this.stackName = newStackName;
                 this.currentStackName = newStackName;
+                AWS.config.region = newRegion;
                 this.refresh();
             }
         } else {

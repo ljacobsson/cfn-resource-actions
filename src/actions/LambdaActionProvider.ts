@@ -31,7 +31,7 @@ export class LambdaActionProvider {
                     title: `↗`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.openUrl",
-                    arguments: [`https://${AWS.config.region}.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions/${arg}?tab=configuration`]
+                    arguments: [`https://${AWS.config.region}.console.aws.amazon.com/lambda/home?region=${AWS.config.region}#/functions/${arg}?tab=configuration`]
                 }, {
                     title: `Invoke`,
                     tooltip: "Invoke function",
@@ -41,7 +41,7 @@ export class LambdaActionProvider {
                     title: `Tail logs`,
                     tooltip: "Go to AWS console for resource",
                     command: "cfn-resource-actions.runShellCommand",
-                    arguments: [`aws logs tail /aws/lambda/${arg} --follow`]
+                    arguments: [`aws logs tail /aws/lambda/${arg} --follow --region ${AWS.config.region}`]
                 }];
                 const stats = XRayUtil.CurrentStats[arg];
                 if (stats) {
@@ -50,7 +50,7 @@ export class LambdaActionProvider {
                             title: `Avg. duration: ${stats.AverageDuration}s`,
                             tooltip: "Error rate",
                             command: "cfn-resource-actions.openUrl",
-                            arguments: [`https://eu-west-1.console.aws.amazon.com/xray/home?region=eu-west-1#/traces?filter=service(id(name%3A%20%22${arg}%22%2C%20type%3A%20%22AWS%3A%3ALambda%3A%3AFunction%22))`]
+                            arguments: [`https://${AWS.config.region}.console.aws.amazon.com/xray/home?region=${AWS.config.region}#/traces?filter=service(id(name%3A%20%22${arg}%22%2C%20type%3A%20%22AWS%3A%3ALambda%3A%3AFunction%22))`]
                         });
                     }
                     if (stats.ErrorRate > 0) {
@@ -58,7 +58,7 @@ export class LambdaActionProvider {
                             title: `⚠ Error rate: ${stats.ErrorRate}%`,
                             tooltip: "Error rate",
                             command: "cfn-resource-actions.openUrl",
-                            arguments: [`https://eu-west-1.console.aws.amazon.com/xray/home?region=eu-west-1#/traces?filter=service(id(name%3A%20%22${arg}%22%2C%20type%3A%20%22AWS%3A%3ALambda%3A%3AFunction%22))%20%7B%20(error%20%3D%20true%20%7C%7C%20fault%20%3D%20true)%20%7D`]
+                            arguments: [`https://${AWS.config.region}.console.aws.amazon.com/xray/home?region=${AWS.config.region}#/traces?filter=service(id(name%3A%20%22${arg}%22%2C%20type%3A%20%22AWS%3A%3ALambda%3A%3AFunction%22))%20%7B%20(error%20%3D%20true%20%7C%7C%20fault%20%3D%20true)%20%7D`]
                         });
                     }
                     if (stats.ThrottleRate > 0) {
@@ -66,7 +66,7 @@ export class LambdaActionProvider {
                             title: `⚠ Throttle rate: ${stats.ThrottleRate}%`,
                             tooltip: "Throttle rate",
                             command: "cfn-resource-actions.openUrl",
-                            arguments: [`https://eu-west-1.console.aws.amazon.com/xray/home?region=eu-west-1#/traces?filter=service(id(name%3A%20%22${arg}%22%2C%20type%3A%20%22AWS%3A%3ALambda%3A%3AFunction%22))%20%7B%20(throttle%20%3D%20true)%20%7D`]
+                            arguments: [`https://${AWS.config.region}.console.aws.amazon.com/xray/home?region=${AWS.config.region}#/traces?filter=service(id(name%3A%20%22${arg}%22%2C%20type%3A%20%22AWS%3A%3ALambda%3A%3AFunction%22))%20%7B%20(throttle%20%3D%20true)%20%7D`]
                         });
                     }
 
