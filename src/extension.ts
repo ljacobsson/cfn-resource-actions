@@ -3,20 +3,16 @@ import { PhysicalCodelensProvider as PhysicalCodelensProvider } from './provider
 import { LambdaHandlerProvider } from './providers/LambdaHandlerProvider';
 import { CloudFormation, STS } from "aws-sdk";
 import { Globals } from "./util/Globals";
-import { StackResourceSummaries } from 'aws-sdk/clients/cloudformation';
 import * as vscode from 'vscode';
 import AWS = require('aws-sdk');
 import { IActionProvider } from './actions/IActionProvider';
 import { LogicalCodelensProvider } from './providers/LogicalCodelensProvider';
 import { CloudFormationUtil } from './util/CloudFormationUtil';
-import { XRayUtil } from './util/XRayUtil';
 const opn = require('opn');
 const path = require('path');
 const clipboardy = require('clipboardy');
 const sharedIniFileLoader = require("@aws-sdk/shared-ini-file-loader");
 require("@mhlabs/aws-sdk-sso");
-const fs = require("fs");
-const ini = require("ini");
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 const onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
@@ -41,33 +37,8 @@ export async function activate(context: ExtensionContext) {
     }
     Globals.OutputChannel = window.createOutputChannel("CloudFormation Resource Actions");
 
-    let stackName: string | null | undefined = null;
-
-    if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
-        stackName = workspace.rootPath?.split(path.sep)?.slice(-1)[0];
-    } else {
-        try {
-            const filePath = path.join(workspace.rootPath, "samconfig.toml");
-            if (fs.existsSync(filePath)) {
-                const samConfig = ini.parse(fs.readFileSync(filePath, 'utf-8'));
-                stackName = samConfig.default.deploy.parameters.stack_name;
-            }
-        } catch (ex) {
-            console.log(ex);
-        }
-    }
-
-    if (!stackName) {
-        if (await config.has("stackName")) {
-            stackName = await config.get("stackName");
-        }
-
-        if (!stackName) {
-            stackName = await window.showInputBox({ prompt: "Enter stack name", placeHolder: "Please enter the name of the deployed stack" });
-            await config.update("stackName", stackName);
-        }
-    }
-
+    window.activeTextEditor?.document.uri.fsPath;    
+    
     languages.registerDefinitionProvider(['yaml', 'yml', 'template', 'json'], new LambdaHandlerProvider());
 
     languages.registerCodeLensProvider(['yaml', 'yml', 'template', 'json'], new LogicalCodelensProvider());
@@ -87,7 +58,7 @@ export async function activate(context: ExtensionContext) {
             const creds = await (AWS.config.credentialProvider as any).resolvePromise();
             await creds.refreshPromise();
             CloudFormationUtil.cloudFormation = new CloudFormation({ credentials: creds });
-            await commands.executeCommand("cfn-resource-actions.refresh", stackName as string);
+            await commands.executeCommand("cfn-resource-actions.refresh");
             window.showInformationMessage(`Switched to profile: ${profile}`);
         } catch (err) {
             window.showInformationMessage(err.message);
@@ -105,14 +76,8 @@ export async function activate(context: ExtensionContext) {
         vscode.window.showInformationMessage(`Copied '${text}' to the clipboard`);
     });
     try {
-        const stackInfo = await CloudFormationUtil.getStackInfo(stackName as string);
-        const resources = await CloudFormationUtil.getStackResources(stackName as string);
-        await XRayUtil.getStats(resources?.StackResourceSummaries);
-
-        //    if (resources && stackInfo?.Stacks) {
-        const codelensProvider = new PhysicalCodelensProvider(resources?.StackResourceSummaries as StackResourceSummaries, stackInfo?.Stacks ? stackInfo?.Stacks[0] : undefined, stackName as string);
+        const codelensProvider = new PhysicalCodelensProvider();
         languages.registerCodeLensProvider(["json", "yml", "yaml", "template"], codelensProvider);
-        //    }
     } catch (err) {
         window.showErrorMessage(err);
     }

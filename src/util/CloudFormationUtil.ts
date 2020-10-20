@@ -26,6 +26,9 @@ export class CloudFormationUtil {
     }
 
     static async getStackResources(stackName: string) {
+        if (!stackName || !stackName.length) {
+            return;
+        }
         const cloudFormation = this.cloudFormation || new AWS.CloudFormation();
         
         try {

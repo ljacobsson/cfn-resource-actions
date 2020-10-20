@@ -10,6 +10,11 @@ import AWS = require('aws-sdk');
 import { CloudFormationUtil } from '../util/CloudFormationUtil';
 import { Globals } from '../util/Globals';
 import { XRayUtil } from '../util/XRayUtil';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as ini from 'ini';
+import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
+const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 
 export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
 
@@ -28,19 +33,19 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
     stackResources: StackResourceSummaries | undefined;
     stack: Stack | undefined;
     driftStatus: DetectStackDriftOutput | undefined;
-
-    constructor(stackResources: StackResourceSummaries, stack: Stack | undefined, stackName: string) {
+    stackName: string | undefined;
+    currentStackName: string = "";
+    originalStackName: string | undefined;
+    constructor() {
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
         });
         setInterval(async () => {
-            this.refresh(stackName);
+            this.refresh();
         }, Globals.RefreshRate);
-        this.stackResources = stackResources;
-        this.stack = stack;
 
         vscode.commands.registerCommand("cfn-resource-actions.refresh", async (stack: any) => {
-            await this.refresh(stack);
+            await this.refresh();
         });
 
         vscode.commands.registerCommand("cfn-resource-actions.checkDrift", async (stack: any) => {
@@ -48,15 +53,49 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         });
     }
 
-    private async refresh(stackName: string) {        
-        const stacks = (await CloudFormationUtil.getStackInfo(stackName))?.Stacks;
+    private async refresh() {
+        if (!this.stackName) {
+            return;
+        }
+        const stacks = (await CloudFormationUtil.getStackInfo(this.stackName))?.Stacks;
         this.stack = stacks ? stacks[0] : undefined;
-        this.stackResources = (await CloudFormationUtil.getStackResources(stackName))?.StackResourceSummaries;
+        this.stackResources = (await CloudFormationUtil.getStackResources(this.stackName))?.StackResourceSummaries;
         await XRayUtil.getStats(this.stackResources);
         this._onDidChangeCodeLenses.fire();
     }
 
-    public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
+    public async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[]> {
+        const filePath = path.join(path.dirname(document.uri.fsPath), "samconfig.toml");
+        if (fs.existsSync(filePath)) {
+            const samConfig = ini.parse(fs.readFileSync(filePath, 'utf-8'));
+            const newStackName = samConfig.default.deploy.parameters.stack_name;
+            if (newStackName !== this.stackName) {
+                this.stackName = newStackName;
+                this.currentStackName = newStackName;
+                this.refresh();
+            }
+        } else {
+            if (!this.originalStackName) {
+                let stackName;
+                if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
+                    stackName = vscode.workspace.rootPath?.split(path.sep)?.slice(-1)[0];
+                } 
+            
+                if (!stackName) {
+                    if (await config.has("stackName")) {
+                        stackName = await config.get("stackName");
+                    }
+            
+                    if (!stackName) {
+                        stackName = await vscode.window.showInputBox({ prompt: "Could not find samconfig.toml. Please enter stack name", placeHolder: "Please enter the name of the deployed stack" });
+                        await config.update("stackName", stackName);
+                    }
+                }
+                this.originalStackName = stackName;
+            }
+            this.stackName = this.originalStackName;
+        }
+
         if (
             vscode.workspace
                 .getConfiguration("cfn-resource-actions")
