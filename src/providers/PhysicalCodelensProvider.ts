@@ -37,6 +37,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
     stackName: string | undefined;
     currentStackName: string = "";
     originalStackName: string | undefined;
+    currentDocument: vscode.TextDocument | undefined;
     constructor() {
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
@@ -53,8 +54,12 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
             await CloudFormationUtil.checkDrift(stack);
         });
 
-        vscode.commands.registerCommand("cfn-resource-actions.uploadLambdaCode", async (stackName: string, template: string, filePath: string) => {
-            await LambdaUtil.deployCode(stackName, template, filePath);
+        vscode.commands.registerCommand("cfn-resource-actions.uploadLambdaCode", async () => {
+            if (!this.currentDocument) {
+                vscode.window.showInformationMessage("Deploying to functions in last opened template file. Can't find any valid CloudFormation file in the history");
+                return;
+            }
+            await LambdaUtil.deployCode(this.currentStackName, this.currentDocument.getText(), path.dirname(this.currentDocument.uri.fsPath));
         });
     }
 
@@ -70,6 +75,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
     }
 
     public async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[]> {
+        this.currentDocument = document;
 
         if (
             vscode.workspace

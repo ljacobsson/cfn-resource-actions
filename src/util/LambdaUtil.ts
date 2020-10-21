@@ -4,10 +4,12 @@ import * as  zipFolder from "zip-a-folder";
 import { TemplateParser } from "./TemplateParser";
 import { window } from "vscode";
 import path = require("path");
-
+import * as tempDir from "temp-dir"
 export class LambdaUtil {
 
     static async deployCode(stack: string, templateText: string, filePath: string): Promise<any> {
+        window.showInformationMessage("Starting Lambda code upload");
+
         const template = TemplateParser.parse(templateText)        ;
         const cloudformation = new AWS.CloudFormation();
         const lambda = new AWS.Lambda();
@@ -23,7 +25,7 @@ export class LambdaUtil {
         const templateFunctions = Object.keys(template.Resources).filter(p => template.Resources[p].Type === "AWS::Serverless::Function");
         const outputPath = templateFunctions.map(p => template.Resources[p].Properties.CodeUri)[0] || template.Globals.Function.CodeUri;
         const aliasMap = templateFunctions.filter(p => template.Resources[p].Properties.AutoPublishAlias).map(p => ({ Key: p.toString(), Alias: template.Resources[p].Properties.AutoPublishAlias, FunctionName: "" }));
-        const zipFileName = "cfn-resource-actions-artifact.zip";
+        const zipFileName = path.join(tempDir, "cfn-resource-actions-artifact.zip");
         
         await zipFolder.zip(path.join(filePath, outputPath), zipFileName);
 

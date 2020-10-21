@@ -2,7 +2,7 @@
 	"name": "cfn-resource-actions",
 	"displayName": "CloudFormation Resource Actions",
 	"description": "Integrate with deployed resources directly from your CloudFormation template",
-	"version": "0.0.34",
+	"version": "0.0.35",
 	"publisher": "ljacobsson",
 	"engines": {
 		"vscode": "^1.46.0"
@@ -35,6 +35,10 @@
 			{
 				"command": "cfn-resource-actions.awsProfile",
 				"title": "CloudFormation Resource Actions: AWS Profile"
+			},
+			{
+				"command": "cfn-resource-actions.uploadLambdaCode",
+				"title": "CloudFormation Resource Actions: Upload Lambda code"
 			}
 		],
 		"configuration": {
