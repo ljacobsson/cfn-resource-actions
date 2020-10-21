@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as ini from 'ini';
 import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
+import { LambdaUtil } from '../util/LambdaUtil';
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 
 export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
@@ -51,6 +52,10 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         vscode.commands.registerCommand("cfn-resource-actions.checkDrift", async (stack: any) => {
             await CloudFormationUtil.checkDrift(stack);
         });
+
+        vscode.commands.registerCommand("cfn-resource-actions.uploadLambdaCode", async (stackName: string, template: string, filePath: string) => {
+            await LambdaUtil.deployCode(stackName, template, filePath);
+        });
     }
 
     private async refresh() {
@@ -65,38 +70,6 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
     }
 
     public async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[]> {
-        const filePath = path.join(path.dirname(document.uri.fsPath), "samconfig.toml");
-        if (fs.existsSync(filePath)) {
-            const samConfig = ini.parse(fs.readFileSync(filePath, 'utf-8'));
-            const newStackName = samConfig.default.deploy.parameters.stack_name;
-            const newRegion = samConfig.default.deploy.parameters.region;
-            if (newStackName !== this.stackName || newRegion !== AWS.config.region) {
-                this.stackName = newStackName;
-                this.currentStackName = newStackName;
-                AWS.config.region = newRegion;
-                this.refresh();
-            }
-        } else {
-            if (!this.originalStackName) {
-                let stackName;
-                if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
-                    stackName = vscode.workspace.rootPath?.split(path.sep)?.slice(-1)[0];
-                } 
-            
-                if (!stackName) {
-                    if (await config.has("stackName")) {
-                        stackName = await config.get("stackName");
-                    }
-            
-                    if (!stackName) {
-                        stackName = await vscode.window.showInputBox({ prompt: "Could not find samconfig.toml. Please enter stack name", placeHolder: "Please enter the name of the deployed stack" });
-                        await config.update("stackName", stackName);
-                    }
-                }
-                this.originalStackName = stackName;
-            }
-            this.stackName = this.originalStackName;
-        }
 
         if (
             vscode.workspace
@@ -109,6 +82,38 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                 const text = document.getText();
                 if (!text.includes("AWSTemplateFormatVersion")) {
                     return [];
+                }
+                const filePath = path.join(path.dirname(document.uri.fsPath), "samconfig.toml");
+                if (fs.existsSync(filePath)) {
+                    const samConfig = ini.parse(fs.readFileSync(filePath, 'utf-8'));
+                    const newStackName = samConfig.default.deploy.parameters.stack_name;
+                    const newRegion = samConfig.default.deploy.parameters.region;
+                    if (newStackName !== this.stackName || newRegion !== AWS.config.region) {
+                        this.stackName = newStackName;
+                        this.currentStackName = newStackName;
+                        AWS.config.region = newRegion;
+                        this.refresh();
+                    }
+                } else {
+                    if (!this.originalStackName) {
+                        let stackName;
+                        if (config.get("stackNameIsSameAsWorkspaceFolderName")) {
+                            stackName = vscode.workspace.rootPath?.split(path.sep)?.slice(-1)[0];
+                        }
+
+                        if (!stackName) {
+                            if (await config.has("stackName")) {
+                                stackName = await config.get("stackName");
+                            }
+
+                            if (!stackName) {
+                                stackName = await vscode.window.showInputBox({ prompt: "Could not find samconfig.toml. Please enter stack name", placeHolder: "Please enter the name of the deployed stack" });
+                                await config.update("stackName", stackName);
+                            }
+                        }
+                        this.originalStackName = stackName;
+                    }
+                    this.stackName = this.originalStackName;
                 }
 
                 let matches;
@@ -167,7 +172,14 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
             tooltip: "Open in AWS console",
             command: "cfn-resource-actions.openUrl",
             arguments: [`https://${AWS.config.region}.console.aws.amazon.com/cloudformation/home?region=${AWS.config.region}#/stacks/events?filteringText=${this.stack?.StackName}&stackId=${this.stack?.StackId}`]
-        }));
+        }),
+            new vscode.CodeLens(range, {
+                title: `Deploy function code`,
+                tooltip: "Open in AWS console",
+                command: "cfn-resource-actions.uploadLambdaCode",
+                arguments: [this.stack?.StackName, document.getText(), path.dirname(document.uri.fsPath)]
+            })
+        );
         if (this.stack?.DriftInformation?.StackDriftStatus) {
             this.codeLenses.push(new vscode.CodeLens(range, {
                 title: `Drift status: ${this.stack?.DriftInformation.StackDriftStatus}`,
