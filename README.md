@@ -1,4 +1,7 @@
 # cfn-resource-actions
+[![](https://vsmarketplacebadge.apphb.com/version-short/https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions.svg)](https://marketplace.visualstudio.com/items?itemName=https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions)
+[![](https://vsmarketplacebadge.apphb.com/downloads-short/ljacobsson.svg)](https://marketplace.visualstudio.com/items?itemName=https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions)
+[![](https://vsmarketplacebadge.apphb.com/installs/https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions.svg)](https://marketplace.visualstudio.com/items?itemName=https://marketplace.visualstudio.com/items?itemName=ljacobsson.cfn-resource-actions)
 
 ## Features
 
