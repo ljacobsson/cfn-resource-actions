@@ -15,6 +15,7 @@ import * as path from 'path';
 import * as ini from 'ini';
 import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 import { LambdaUtil } from '../util/LambdaUtil';
+import { LogsActionProvider } from '../actions/LogsActionProvider';
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('cfn-resource-actions');
 
 export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
@@ -29,6 +30,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
         ...new SQSActionProvider().getPhysicalActions(),
         ...new StepFunctionsActionProvider().getPhysicalActions(),
         ...new EventsActionProvider().getPhysicalActions(),
+        ...new LogsActionProvider().getPhysicalActions(),
     };
 
     stackResources: StackResourceSummaries | undefined;
