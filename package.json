@@ -97,7 +97,7 @@
 	},
 	"dependencies": {
 		"@aws-sdk/shared-ini-file-loader": "0.1.0-preview.1",
-		"@mhlabs/aws-sdk-sso": "0.0.12",
+		"@mhlabs/aws-sdk-sso": "0.0.14",
 		"@mhlabs/cfn-diagram": "^1.0.10",
 		"@mhlabs/cwlogs-cli": "^1.0.2",
 		"@mhlabs/evb-cli": "^1.1.10",

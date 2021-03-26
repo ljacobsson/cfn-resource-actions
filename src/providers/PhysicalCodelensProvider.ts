@@ -113,7 +113,11 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                             }
 
                             if (!stackName) {
-                                stackName = await vscode.window.showInputBox({ prompt: "Could not find samconfig.toml. Please enter stack name", placeHolder: "Please enter the name of the deployed stack" });
+                                stackName = await vscode.window.showInputBox({ prompt: "Could not find samconfig.toml. Please enter stack name or hit enter to ignore.", placeHolder: "Please enter the name of the deployed stack" });
+                                if (stackName === "") {
+                                    stackName = vscode.workspace.rootPath?.split(path.sep)?.slice(-1)[0];
+                                    vscode.window.showInformationMessage(`Set stack name to ${stackName}. You can change this in ./.vscode/settings.json`);
+                                }
                                 await config.update("stackName", stackName);
                             }
                         }
@@ -148,7 +152,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                                     tooltip: "Copy resource ID to clipboard",
                                     command: "cfn-resource-actions.clipboard",
                                     arguments: [res.PhysicalResourceId]
-                                }, ...(Object.keys(this.actionArgs).includes(res.ResourceType) ? this.actionArgs[res.ResourceType](res.PhysicalResourceId) as any[] : []));
+                                }, ...(Object.keys(this.actionArgs).includes(res.ResourceType) ? await this.actionArgs[res.ResourceType](res.PhysicalResourceId) as any[] : []));
                                 for (const item of actionList) {
                                     this.codeLenses.push(new vscode.CodeLens(range, item));
                                 }
