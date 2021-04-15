@@ -99,6 +99,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                     if (newStackName !== this.stackName || newRegion !== AWS.config.region) {
                         this.stackName = newStackName;
                         this.currentStackName = newStackName;
+                        await config.update("stackName", newStackName);
                         AWS.config.region = newRegion;
                         this.refresh();
                     }
@@ -154,7 +155,7 @@ export class PhysicalCodelensProvider implements vscode.CodeLensProvider {
                                     tooltip: "Copy resource ID to clipboard",
                                     command: "cfn-resource-actions.clipboard",
                                     arguments: [res.PhysicalResourceId]
-                                }, ...(Object.keys(this.actionArgs).includes(res.ResourceType) ? await this.actionArgs[res.ResourceType](res.PhysicalResourceId) as any[] : []));
+                                }, ...(Object.keys(this.actionArgs).includes(res.ResourceType) ? await this.actionArgs[res.ResourceType](res.PhysicalResourceId, res.LogicalResourceId, this.currentDocument) as any[] : []));
                                 for (const item of actionList) {
                                     this.codeLenses.push(new vscode.CodeLens(range, item));
                                 }

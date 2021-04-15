@@ -25,7 +25,8 @@ export class CloudFormationUtil {
         }
     }
 
-    static async getStackResources(stackName: string) {
+    static async getStackResources(stackName?: string) {
+        stackName = stackName || await config.get("stackName");
         if (!stackName || !stackName.length) {
             return;
         }

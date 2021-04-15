@@ -26,6 +26,7 @@ The current version supports the following actions. More to follow in later vers
   * Poll queue
 * `AWS::StepFunctions::Statemachine`
   * Start execution
+  * Quickly sync your local changes with the cloud
 
 _All listed resource types also provide a link to its AWS console location (`↗`)_
 
