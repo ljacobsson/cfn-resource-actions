@@ -20,7 +20,7 @@ import { SingleSignOnCredentials } from "@mhlabs/aws-sdk-sso";
 const opn = require("opn");
 const path = require("path");
 const clipboardy = require("clipboardy");
-const sharedIniFileLoader = require("@aws-sdk/shared-ini-file-loader");
+import sharedIniFileLoader = require("@aws-sdk/shared-ini-file-loader");
 let authed = false;
 let disposables: Disposable[] = [];
 const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
@@ -34,7 +34,7 @@ export async function activate(context: ExtensionContext) {
   try {
     await authenticate();
   } catch (err) {
-    await window.showErrorMessage(err);
+    await window.showErrorMessage(JSON.stringify(err));
   }
 
   Globals.RefreshRate = ((await config.get("refreshRate")) as number) * 1000;
@@ -46,7 +46,7 @@ export async function activate(context: ExtensionContext) {
       authed = true;
       Globals.AccountId = stsResponse.Account as string;
     } catch (err) {
-      await window.showErrorMessage(err);
+      await window.showErrorMessage(JSON.stringify(err));
     }
     Globals.OutputChannel = window.createOutputChannel(
       "CloudFormation Resource Actions"
@@ -93,7 +93,7 @@ export async function activate(context: ExtensionContext) {
           await commands.executeCommand("cfn-resource-actions.refresh");
           window.showInformationMessage(`Switched to profile: ${profile}`);
         } catch (err) {
-          window.showInformationMessage(err.message);
+          window.showInformationMessage(JSON.parse(JSON.stringify(err)).message);
         }
       }
     );
@@ -123,7 +123,7 @@ export async function activate(context: ExtensionContext) {
         codelensProvider
       );
     } catch (err) {
-      window.showErrorMessage(err);
+      window.showErrorMessage(JSON.stringify(err));
     }
 
     IActionProvider.registerCommands();
@@ -137,7 +137,7 @@ async function authenticate(profile?: any) {
       new SingleSignOnCredentials()
     );
   } catch (err) {
-    await window.showWarningMessage(err);
+    await window.showWarningMessage(JSON.stringify(err));
     console.log(err);
   }
 }
